@@ -75,7 +75,7 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
 
   return (
     <header className='safe-top sticky top-0 z-30 border-b border-border bg-canvas/80 backdrop-blur'>
-      <div className='mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-6'>
+      <div className='flex h-14 w-full items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-6'>
         <Link href='/' className='flex shrink-0 items-center gap-2' aria-label='KeepSpark home'>
           <span className='h-2.5 w-2.5 rounded-full bg-accent' />
           <span className='hidden text-[15px] font-semibold tracking-tight text-foreground sm:inline'>
