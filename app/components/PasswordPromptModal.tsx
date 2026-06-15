@@ -15,6 +15,7 @@ export interface PasswordPromptModalProps {
   busy?: boolean
   onSubmit: (password: string) => void | Promise<void>
   onCancel: () => void
+  onPasskeyUnlock?: () => void | Promise<void>
 }
 
 /**
@@ -29,6 +30,7 @@ export function PasswordPromptModal({
   busy = false,
   onSubmit,
   onCancel,
+  onPasskeyUnlock,
 }: PasswordPromptModalProps): JSX.Element {
   const [password, setPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
@@ -101,7 +103,19 @@ export function PasswordPromptModal({
           <p className='mb-3 text-sm text-red-600 dark:text-red-400'>Passwords do not match</p>
         ) : null}
 
-        <div className='flex justify-end gap-2'>
+        <div className='flex flex-col gap-2 sm:flex-row sm:justify-end'>
+          {onPasskeyUnlock ? (
+            <button
+              type='button'
+              disabled={busy}
+              onClick={(): void => {
+                void onPasskeyUnlock()
+              }}
+              className='rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition hover:bg-surface-hover disabled:opacity-50'
+            >
+              Use passkey
+            </button>
+          ) : null}
           <button
             type='button'
             onClick={onCancel}

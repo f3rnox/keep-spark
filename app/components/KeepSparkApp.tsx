@@ -19,6 +19,7 @@ import { reorderNotesInSection } from '../lib/reorderNotesInSection'
 import { sortNotes } from '../lib/sortNotes'
 import { setSort } from '../lib/sortStore'
 import { useAppShortcuts } from '../lib/useAppShortcuts'
+import { useAutoLock } from '../lib/useAutoLock'
 import { useLists } from '../lib/useLists'
 import { useNotes } from '../lib/useNotes'
 import { useRecentSearches } from '../lib/useRecentSearches'
@@ -94,6 +95,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
   const { recents, commitSearch, removeRecent, clearRecents } = useRecentSearches()
 
   useReminders(notes)
+  useAutoLock()
 
   const [view, setView] = useState<NoteView>('notes')
   const [selectedListId, setSelectedListId] = useState<string | null>(null)

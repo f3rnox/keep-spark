@@ -105,6 +105,13 @@ export function clearSessionKey(noteId: string): void {
 }
 
 /**
+ * Returns whether any per-note unlock session is active.
+ */
+export function hasAnySessionKeys(): boolean {
+  return sessionKeys.size > 0
+}
+
+/**
  * Clears every per-note unlock session.
  */
 export function clearAllSessionKeys(): void {

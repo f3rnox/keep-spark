@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import { hashMasterPasswordVerifier } from './hashMasterPasswordVerifier'
 import { lockGlobalEncryptionSession } from './globalEncryptionSession'
+import { clearPasskeyUnlockRecord } from './passkeyUnlockStore'
 import {
   clearMasterPasswordVerifier,
   getMasterPasswordVerifierSnapshot,
@@ -54,6 +55,7 @@ export function useMasterPassword(): MasterPasswordApi {
 
       const nextVerifier = await hashMasterPasswordVerifier(nextPassword)
       setMasterPasswordVerifier(nextVerifier)
+      clearPasskeyUnlockRecord()
       await unlockGlobalEncryption(nextPassword)
     },
     [],
@@ -69,6 +71,7 @@ export function useMasterPassword(): MasterPasswordApi {
     }
 
     clearMasterPasswordVerifier()
+    clearPasskeyUnlockRecord()
     lockGlobalEncryptionSession()
   }, [])
 

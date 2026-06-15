@@ -10,6 +10,8 @@ import { saveListsToIdb } from './saveListsToIdb'
 import { saveNotesToIdb } from './saveNotesToIdb'
 import { setTheme } from './themeStore'
 import { clearMasterPasswordVerifier } from './masterPasswordStore'
+import { clearPasskeyUnlockRecord } from './passkeyUnlockStore'
+import { clearAutoLockMinutes } from './autoLockStore'
 import { lockGlobalEncryptionSession } from './globalEncryptionSession'
 
 /**
@@ -26,6 +28,8 @@ export async function clearAppData(): Promise<void> {
   setNoteLayout(DEFAULT_NOTE_LAYOUT)
   setTheme('light')
   clearMasterPasswordVerifier()
+  clearPasskeyUnlockRecord()
+  clearAutoLockMinutes()
   lockGlobalEncryptionSession()
 
   try {

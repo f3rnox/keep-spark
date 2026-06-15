@@ -3,6 +3,8 @@
 import { useState, type JSX } from 'react'
 import { useGlobalEncryption } from '../lib/useGlobalEncryption'
 import { useNotes } from '../lib/useNotes'
+import { usePasskeyUnlock } from '../lib/usePasskeyUnlock'
+import { isPasskeyUnlockAvailable } from '../lib/isPasskeyUnlockAvailable'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { IconLink } from './IconLink'
@@ -15,9 +17,12 @@ export function GlobalEncryptionButton(): JSX.Element {
   const { notes } = useNotes()
   const { hasMasterPassword, isUnlocked, encryptedCount, unlockAll, lockAll } =
     useGlobalEncryption(notes)
+  const { hasPasskey, unlockWithPasskey } = usePasskeyUnlock()
   const [promptOpen, setPromptOpen] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<boolean>(false)
+
+  const passkeyAvailable: boolean = isPasskeyUnlockAvailable() && hasPasskey
 
   if (!hasMasterPassword) {
     return (
@@ -44,6 +49,20 @@ export function GlobalEncryptionButton(): JSX.Element {
       setPromptOpen(false)
     } catch {
       setError('Incorrect password')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handlePasskeyUnlock = async (): Promise<void> => {
+    setBusy(true)
+    setError(null)
+    try {
+      const password: string = await unlockWithPasskey()
+      await unlockAll(password)
+      setPromptOpen(false)
+    } catch (passkeyError: unknown) {
+      setError(passkeyError instanceof Error ? passkeyError.message : 'Passkey unlock failed')
     } finally {
       setBusy(false)
     }
@@ -76,6 +95,7 @@ export function GlobalEncryptionButton(): JSX.Element {
             setPromptOpen(false)
             setError(null)
           }}
+          onPasskeyUnlock={passkeyAvailable ? handlePasskeyUnlock : undefined}
         />
       ) : null}
     </>

@@ -1,6 +1,8 @@
 import type { Note, NoteList } from './types'
 import { coerceList } from './coerceList'
 import { coerceNote } from './coerceNote'
+import { coerceAppExportPayload, detectBackupFormatFromRaw } from './detectBackupFormat'
+import { decryptEncryptedExportPayload } from './decryptEncryptedExportPayload'
 import type { AppExportPayload } from './exportAppData'
 import { setLists } from './listsStore'
 import { setNotes } from './notesStore'
@@ -16,27 +18,19 @@ export interface ImportAppDataResult {
 }
 
 function parsePayload(raw: string): AppExportPayload {
+  const format = detectBackupFormatFromRaw(raw)
+  if (format !== 'keepspark-v1') {
+    throw new Error('Use password-protected import for encrypted backups.')
+  }
+
   const parsed: unknown = JSON.parse(raw)
+  const coerced: AppExportPayload = coerceAppExportPayload(parsed)
 
-  if (typeof parsed !== 'object' || parsed === null) {
-    throw new Error('Backup file is not a valid JSON object.')
-  }
-
-  const record: Record<string, unknown> = parsed as Record<string, unknown>
-
-  if (record.version !== 1) {
-    throw new Error('Unsupported backup version.')
-  }
-
-  if (!Array.isArray(record.notes) || !Array.isArray(record.lists)) {
-    throw new Error('Backup file is missing notes or lists.')
-  }
-
-  const notes: Note[] = record.notes
+  const notes: Note[] = coerced.notes
     .map((entry: unknown): Note | null => coerceNote(entry))
     .filter((note: Note | null): note is Note => note !== null)
 
-  const lists: NoteList[] = record.lists
+  const lists: NoteList[] = coerced.lists
     .map((entry: unknown): NoteList | null => coerceList(entry))
     .filter((list: NoteList | null): list is NoteList => list !== null)
 
@@ -46,7 +40,7 @@ function parsePayload(raw: string): AppExportPayload {
 
   return {
     version: 1,
-    exportedAt: typeof record.exportedAt === 'number' ? record.exportedAt : Date.now(),
+    exportedAt: coerced.exportedAt,
     notes,
     lists,
   }
@@ -59,7 +53,47 @@ function parsePayload(raw: string): AppExportPayload {
  */
 export async function importAppData(raw: string): Promise<ImportAppDataResult> {
   const payload: AppExportPayload = parsePayload(raw)
+  return applyImportPayload(payload)
+}
 
+/**
+ * Imports notes and lists from a password-protected encrypted backup.
+ *
+ * @param raw JSON string from an encrypted export file.
+ * @param password Export password used when creating the backup.
+ */
+export async function importEncryptedAppData(
+  raw: string,
+  password: string,
+): Promise<ImportAppDataResult> {
+  const payload: AppExportPayload = await decryptEncryptedExportPayload(raw, password)
+
+  const notes: Note[] = payload.notes
+    .map((entry: unknown): Note | null => coerceNote(entry))
+    .filter((note: Note | null): note is Note => note !== null)
+
+  const lists: NoteList[] = payload.lists
+    .map((entry: unknown): NoteList | null => coerceList(entry))
+    .filter((list: NoteList | null): list is NoteList => list !== null)
+
+  if (notes.length === 0 && lists.length === 0) {
+    throw new Error('Backup file contains no valid notes or lists.')
+  }
+
+  return applyImportPayload({
+    version: 1,
+    exportedAt: payload.exportedAt,
+    notes,
+    lists,
+  })
+}
+
+/**
+ * Persists a validated export payload, replacing current local data.
+ *
+ * @param payload Parsed backup payload.
+ */
+async function applyImportPayload(payload: AppExportPayload): Promise<ImportAppDataResult> {
   await Promise.all([
     saveNotesToIdb(payload.notes),
     saveListsToIdb(payload.lists),
