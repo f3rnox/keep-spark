@@ -1,22 +1,45 @@
 @import "tailwindcss";
 
+/* Drive the dark variant from a `.dark` class so the theme switcher controls
+   every `dark:` utility (instead of the OS preference alone). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #f8f9fa;
-  --foreground: #202124;
+  --canvas: #fafaf9;
+  --surface: #ffffff;
+  --surface-hover: #f4f4f3;
+  --border: #e7e5e4;
+  --foreground: #1c1917;
+  --muted: #79716b;
+  --accent: #1c1917;
+  --on-accent: #fafaf9;
+  --ring: #a8a29e;
+}
+
+.dark {
+  --canvas: #0b0b0c;
+  --surface: #161618;
+  --surface-hover: #202023;
+  --border: #2a2a2e;
+  --foreground: #f4f4f3;
+  --muted: #9a958e;
+  --accent: #f4f4f3;
+  --on-accent: #161618;
+  --ring: #4b4b50;
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 html,
@@ -25,12 +48,32 @@ body {
 }
 
 body {
-  background: var(--background);
+  background: var(--canvas);
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgb(252 211 77 / 0.6);
-  color: #1f2937;
+  background: var(--foreground);
+  color: var(--canvas);
+}
+
+/* Thin, theme-aware scrollbars to match the minimalist surfaces. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }

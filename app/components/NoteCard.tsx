@@ -52,10 +52,11 @@ export function NoteCard({
   }, [showPalette])
 
   const isTrash: boolean = view === 'trash'
+  const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
 
   return (
     <article
-      className={`group mb-4 break-inside-avoid rounded-lg border ${classes.bg} ${classes.hoverBg} ${classes.border} text-neutral-800 shadow-sm transition hover:shadow-md dark:text-neutral-100`}
+      className={`group relative mb-4 break-inside-avoid rounded-xl border border-border ${classes.tint} ${stripClass} text-foreground transition-colors hover:border-foreground/25`}
     >
       <button
         type='button'
@@ -66,9 +67,11 @@ export function NoteCard({
         className='block w-full cursor-text text-left'
         disabled={isTrash}
       >
-        <div className='flex items-start justify-between gap-2 px-4 pt-3'>
+        <div className='flex items-start justify-between gap-2 px-4 pt-3.5'>
           {note.title.length > 0 ? (
-            <h3 className='line-clamp-3 break-words text-base font-medium'>{note.title}</h3>
+            <h3 className='line-clamp-3 break-words text-[15px] font-semibold tracking-tight'>
+              {note.title}
+            </h3>
           ) : (
             <span className='sr-only'>Untitled note</span>
           )}
@@ -88,14 +91,18 @@ export function NoteCard({
                 event.stopPropagation()
                 onTogglePinned(note.id)
               }}
-              className='-mt-1 -mr-1 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-neutral-500 transition-opacity hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 dark:text-neutral-300 dark:hover:bg-white/10'
+              className={`-mt-1.5 -mr-1.5 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                note.pinned
+                  ? 'text-foreground'
+                  : 'text-muted opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+              }`}
             >
               <Icon name={note.pinned ? 'pinFilled' : 'pin'} size={18} />
             </span>
           ) : null}
         </div>
         {note.content.length > 0 ? (
-          <p className='whitespace-pre-wrap break-words px-4 py-2 text-sm leading-relaxed text-neutral-800/90 dark:text-neutral-100/90'>
+          <p className='whitespace-pre-wrap break-words px-4 pb-1 pt-2 text-sm leading-relaxed text-muted'>
             {note.content}
           </p>
         ) : (
@@ -152,7 +159,7 @@ export function NoteCard({
               <Icon name='trash' size={18} />
             </IconButton>
             {showPalette ? (
-              <div className='absolute bottom-10 left-0 z-10 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-900'>
+              <div className='absolute bottom-11 left-0 z-10 rounded-xl border border-border bg-surface p-2.5 shadow-lg shadow-black/5'>
                 <ColorPicker
                   value={note.color}
                   onChange={(next: NoteColor): void => onChangeColor(note.id, next)}

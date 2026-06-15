@@ -28,8 +28,8 @@ export function IconButton({
   ...rest
 }: IconButtonProps): JSX.Element {
   const base: string =
-    'inline-flex h-8 w-8 items-center justify-center rounded-full text-neutral-600 dark:text-neutral-300 transition-colors hover:bg-black/10 dark:hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 disabled:opacity-40 disabled:hover:bg-transparent'
-  const activeCls: string = active ? 'bg-black/10 dark:bg-white/10' : ''
+    'inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted'
+  const activeCls: string = active ? 'bg-surface-hover text-foreground' : ''
 
   return (
     <button

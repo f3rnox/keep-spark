@@ -27,11 +27,12 @@ export function ColorPicker({ value, onChange, className = '' }: ColorPickerProp
     <div
       role='radiogroup'
       aria-label='Note color'
-      className={`flex flex-wrap items-center gap-1 ${className}`.trim()}
+      className={`grid grid-cols-6 gap-1.5 ${className}`.trim()}
     >
       {NOTE_COLOR_ORDER.map((color: NoteColor): JSX.Element => {
         const classes = getNoteColorClasses(color)
         const selected: boolean = color === value
+        const isDefault: boolean = color === 'default'
         return (
           <button
             key={color}
@@ -41,13 +42,15 @@ export function ColorPicker({ value, onChange, className = '' }: ColorPickerProp
             aria-label={NOTE_COLOR_LABELS[color]}
             title={NOTE_COLOR_LABELS[color]}
             onClick={(): void => onChange(color)}
-            className={`relative h-7 w-7 rounded-full ring-1 ring-black/10 transition hover:scale-110 dark:ring-white/15 ${classes.swatch} ${
-              selected ? 'outline outline-2 outline-amber-500' : ''
+            className={`relative flex h-6 w-6 items-center justify-center rounded-full transition hover:scale-110 ${classes.dot} ${
+              selected
+                ? 'ring-2 ring-foreground ring-offset-2 ring-offset-surface'
+                : ''
             }`}
           >
-            {selected ? (
-              <span className='pointer-events-none absolute inset-0 flex items-center justify-center text-neutral-800 dark:text-neutral-100'>
-                <Icon name='check' size={14} />
+            {selected && isDefault ? (
+              <span className='pointer-events-none text-foreground'>
+                <Icon name='check' size={13} />
               </span>
             ) : null}
           </button>

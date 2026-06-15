@@ -81,16 +81,17 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
   }
 
   const classes = getNoteColorClasses(color)
+  const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
 
   return (
-    <div className='flex w-full justify-center px-2 sm:px-0'>
+    <div className='flex w-full justify-center'>
       <div
         ref={wrapperRef}
         onKeyDown={handleKeyDown}
-        className={`w-full max-w-xl rounded-lg border ${classes.bg} ${classes.border} shadow-sm transition`}
+        className={`w-full max-w-2xl rounded-xl border border-border bg-surface ${classes.tint} ${stripClass} transition-colors`}
       >
         {expanded ? (
-          <div className='flex flex-col gap-1 px-4 py-3'>
+          <div className='flex flex-col gap-1 px-4 py-3.5'>
             <input
               type='text'
               value={title}
@@ -98,7 +99,7 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
                 setTitle(event.target.value)
               }
               placeholder='Title'
-              className='w-full bg-transparent text-base font-medium text-neutral-900 outline-none placeholder:text-neutral-500 dark:text-neutral-100 dark:placeholder:text-neutral-400'
+              className='w-full bg-transparent text-[15px] font-semibold tracking-tight text-foreground outline-none placeholder:font-normal placeholder:text-muted'
             />
             <textarea
               ref={contentRef}
@@ -106,9 +107,9 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
               onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
                 setContent(event.target.value)
               }
-              placeholder='Take a note...'
+              placeholder='Write something...'
               rows={3}
-              className='w-full resize-none bg-transparent text-sm text-neutral-800 outline-none placeholder:text-neutral-500 dark:text-neutral-200 dark:placeholder:text-neutral-400'
+              className='w-full resize-none bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted'
             />
             <div className='relative mt-1 flex items-center justify-between'>
               <div className='flex items-center'>
@@ -123,12 +124,12 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
               <button
                 type='button'
                 onClick={submit}
-                className='rounded-md px-4 py-1.5 text-sm font-medium text-neutral-700 hover:bg-black/10 dark:text-neutral-200 dark:hover:bg-white/10'
+                className='rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-on-accent transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
               >
-                Close
+                Add
               </button>
               {showPalette ? (
-                <div className='absolute left-0 top-10 z-10 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-900'>
+                <div className='absolute left-0 top-11 z-10 rounded-xl border border-border bg-surface p-2.5 shadow-lg shadow-black/5'>
                   <ColorPicker value={color} onChange={setColor} />
                 </div>
               ) : null}
@@ -138,11 +139,11 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
           <button
             type='button'
             onClick={(): void => setExpanded(true)}
-            className='flex w-full items-center justify-between px-4 py-3 text-left text-base text-neutral-600 dark:text-neutral-300'
+            className='flex w-full items-center justify-between px-4 py-3.5 text-left text-sm text-muted transition-colors hover:text-foreground'
           >
-            <span>Take a note...</span>
-            <span className='text-neutral-500 dark:text-neutral-400'>
-              <Icon name='check' />
+            <span>Write something...</span>
+            <span className='text-muted'>
+              <Icon name='plus' size={18} />
             </span>
           </button>
         )}

@@ -8,11 +8,11 @@ import { useNotes } from '../lib/useNotes'
 import { EditNoteModal } from './EditNoteModal'
 import { EmptyState } from './EmptyState'
 import { Header } from './Header'
+import { NavTabs } from './NavTabs'
 import { NoteCard } from './NoteCard'
 import { NoteEditor } from './NoteEditor'
 import { NoteGrid } from './NoteGrid'
 import { NoteSection } from './NoteSection'
-import { Sidebar } from './Sidebar'
 import { TrashBanner } from './TrashBanner'
 
 /**
@@ -34,7 +34,6 @@ export function KeepApp(): JSX.Element {
 
   const [view, setView] = useState<NoteView>('notes')
   const [query, setQuery] = useState<string>('')
-  const [sidebarExpanded, setSidebarExpanded] = useState<boolean>(false)
   const [editing, setEditing] = useState<Note | null>(null)
 
   const counts = useMemo<Record<NoteView, number>>(
@@ -79,54 +78,47 @@ export function KeepApp(): JSX.Element {
   const searching: boolean = query.trim().length > 0
 
   return (
-    <div className='flex min-h-full flex-1 flex-col bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100'>
-      <Header
-        query={query}
-        onQueryChange={setQuery}
-        onToggleSidebar={(): void =>
-          setSidebarExpanded((prev: boolean): boolean => !prev)
-        }
-      />
-      <div className='flex flex-1'>
-        <Sidebar
-          view={view}
-          expanded={sidebarExpanded}
-          counts={counts}
-          onSelect={setView}
-        />
-        <main className='flex flex-1 flex-col px-4 py-6 sm:px-8'>
-          {showEditor ? (
-            <div className='mb-8'>
-              <NoteEditor
-                onCreate={(title: string, content: string, color: NoteColor): void => {
-                  addNote(title, content, color)
-                }}
-              />
-            </div>
-          ) : null}
+    <div className='flex min-h-full flex-1 flex-col bg-canvas text-foreground'>
+      <Header query={query} onQueryChange={setQuery} />
 
-          {view === 'trash' ? (
-            <TrashBanner count={counts.trash} onEmpty={emptyTrash} />
-          ) : null}
-
-          {visibleNotes.length === 0 ? (
-            <EmptyState view={view} searching={searching} />
-          ) : view === 'notes' && pinned.length > 0 && others.length > 0 ? (
-            <>
-              <NoteSection label='Pinned'>
-                <NoteGrid>{pinned.map(renderCard)}</NoteGrid>
-              </NoteSection>
-              <NoteSection label='Others'>
-                <NoteGrid>{others.map(renderCard)}</NoteGrid>
-              </NoteSection>
-            </>
-          ) : (
-            <NoteSection>
-              <NoteGrid>{visibleNotes.map(renderCard)}</NoteGrid>
-            </NoteSection>
-          )}
-        </main>
+      <div className='sticky top-16 z-20 border-b border-border bg-canvas/80 backdrop-blur'>
+        <div className='mx-auto w-full max-w-6xl px-4 sm:px-6'>
+          <NavTabs view={view} counts={counts} onSelect={setView} />
+        </div>
       </div>
+
+      <main className='mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6'>
+        {showEditor ? (
+          <div className='mb-12'>
+            <NoteEditor
+              onCreate={(title: string, content: string, color: NoteColor): void => {
+                addNote(title, content, color)
+              }}
+            />
+          </div>
+        ) : null}
+
+        {view === 'trash' ? (
+          <TrashBanner count={counts.trash} onEmpty={emptyTrash} />
+        ) : null}
+
+        {visibleNotes.length === 0 ? (
+          <EmptyState view={view} searching={searching} />
+        ) : view === 'notes' && pinned.length > 0 && others.length > 0 ? (
+          <>
+            <NoteSection label='Pinned'>
+              <NoteGrid>{pinned.map(renderCard)}</NoteGrid>
+            </NoteSection>
+            <NoteSection label='Others'>
+              <NoteGrid>{others.map(renderCard)}</NoteGrid>
+            </NoteSection>
+          </>
+        ) : (
+          <NoteSection>
+            <NoteGrid>{visibleNotes.map(renderCard)}</NoteGrid>
+          </NoteSection>
+        )}
+      </main>
 
       {editingNote ? (
         <EditNoteModal

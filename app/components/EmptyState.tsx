@@ -36,11 +36,11 @@ export function EmptyState({ view, searching }: EmptyStateProps): JSX.Element {
   const title: string = searching ? 'No matching notes found' : config.title
 
   return (
-    <div className='flex flex-col items-center justify-center px-6 py-24 text-center text-neutral-500 dark:text-neutral-400'>
-      <span className='mb-4 text-neutral-300 dark:text-neutral-700'>
-        <Icon name={config.icon} size={96} strokeWidth={1} />
+    <div className='flex flex-col items-center justify-center px-6 py-28 text-center'>
+      <span className='mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-surface text-muted'>
+        <Icon name={config.icon} size={28} strokeWidth={1.5} />
       </span>
-      <p className='text-lg'>{title}</p>
+      <p className='text-sm text-muted'>{title}</p>
     </div>
   )
 }

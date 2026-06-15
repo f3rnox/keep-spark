@@ -73,6 +73,7 @@ export function EditNoteModal({
   }
 
   const classes = getNoteColorClasses(color)
+  const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
 
   return (
     <div
@@ -80,20 +81,20 @@ export function EditNoteModal({
       aria-modal='true'
       aria-label='Edit note'
       onClick={close}
-      className='fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm'
+      className='fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
     >
       <div
         onClick={stop}
         onKeyDown={stop}
-        className={`relative flex w-full max-w-xl flex-col rounded-lg border ${classes.bg} ${classes.border} text-neutral-900 shadow-xl dark:text-neutral-100`}
+        className={`relative flex w-full max-w-xl flex-col rounded-2xl border border-border bg-surface ${classes.tint} ${stripClass} text-foreground shadow-2xl shadow-black/20`}
       >
-        <div className='flex items-start justify-between gap-2 px-4 pt-3'>
+        <div className='flex items-start justify-between gap-2 px-5 pt-4'>
           <input
             type='text'
             value={title}
             onChange={(event: ChangeEvent<HTMLInputElement>): void => setTitle(event.target.value)}
             placeholder='Title'
-            className='w-full bg-transparent text-lg font-medium outline-none placeholder:text-neutral-500 dark:placeholder:text-neutral-400'
+            className='w-full bg-transparent text-lg font-semibold tracking-tight outline-none placeholder:font-normal placeholder:text-muted'
             autoFocus
           />
           <span
@@ -107,7 +108,9 @@ export function EditNoteModal({
               event.preventDefault()
               onTogglePinned(note.id)
             }}
-            className='inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-neutral-500 hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 dark:text-neutral-300 dark:hover:bg-white/10'
+            className={`inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              note.pinned ? 'text-foreground' : 'text-muted'
+            }`}
           >
             <Icon name={note.pinned ? 'pinFilled' : 'pin'} />
           </span>
@@ -118,12 +121,12 @@ export function EditNoteModal({
           onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
             setContent(event.target.value)
           }
-          placeholder='Take a note...'
+          placeholder='Write something...'
           rows={8}
-          className='w-full resize-none bg-transparent px-4 py-3 text-base outline-none placeholder:text-neutral-500 dark:placeholder:text-neutral-400'
+          className='w-full resize-none bg-transparent px-5 py-3 text-[15px] leading-relaxed outline-none placeholder:text-muted'
         />
 
-        <div className='relative flex items-center justify-between px-2 pb-2 pt-1'>
+        <div className='relative flex items-center justify-between px-3 pb-3 pt-1'>
           <div className='flex items-center gap-1'>
             <IconButton
               label='Background options'
@@ -152,13 +155,13 @@ export function EditNoteModal({
           <button
             type='button'
             onClick={close}
-            className='rounded-md px-4 py-1.5 text-sm font-medium text-neutral-700 hover:bg-black/10 dark:text-neutral-200 dark:hover:bg-white/10'
+            className='rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-on-accent transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
           >
-            Close
+            Done
           </button>
 
           {showPalette ? (
-            <div className='absolute bottom-12 left-2 z-10 rounded-lg border border-neutral-200 bg-white p-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-900'>
+            <div className='absolute bottom-14 left-3 z-10 rounded-xl border border-border bg-surface p-2.5 shadow-lg shadow-black/5'>
               <ColorPicker value={color} onChange={setColor} />
             </div>
           ) : null}

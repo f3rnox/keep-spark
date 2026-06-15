@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { JSX, ReactNode } from 'react'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { THEME_SCRIPT } from './lib/themeScript'
 import './globals.css'
 
 const geistSans = Geist({
@@ -14,13 +15,13 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Node Keep',
-  description: 'A Node.JS Note-Taking Web UI',
+  title: 'Notes',
+  description: 'A minimalist note-taking web UI',
 }
 
 /**
- * Root layout that mounts the global stylesheet, configures fonts, and
- * provides the html/body shell required by the Next.js App Router.
+ * Root layout that mounts the global stylesheet, configures fonts, and applies
+ * the no-FOUC theme bootstrap script before the app renders.
  *
  * @param props.children The active page rendered inside the body.
  */
@@ -30,9 +31,13 @@ export default function RootLayout({
   return (
     <html
       lang='en'
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className='flex min-h-full flex-col'>{children}</body>
+      <body className='flex min-h-full flex-col'>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {children}
+      </body>
     </html>
   )
 }

@@ -1,89 +1,76 @@
 import type { NoteColor } from './types'
 
 /**
- * Mapping from a `NoteColor` token to the Tailwind background, border, and
- * hover classes that approximate the Google Keep paper palette in both light
- * and dark color schemes.
+ * Minimalist styling tokens for a single `NoteColor`. Colored notes stay on a
+ * neutral surface and express their color through a faint background `tint`, a
+ * thin left accent `strip`, and a solid swatch `dot` in the picker.
  */
 export interface NoteColorClasses {
-  bg: string
-  hoverBg: string
-  border: string
-  swatch: string
+  tint: string
+  strip: string
+  dot: string
 }
 
 const NOTE_COLOR_CLASSES: Record<NoteColor, NoteColorClasses> = {
   default: {
-    bg: 'bg-white dark:bg-neutral-900',
-    hoverBg: 'hover:bg-neutral-50 dark:hover:bg-neutral-800',
-    border: 'border-neutral-200 dark:border-neutral-700',
-    swatch: 'bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600',
+    tint: '',
+    strip: '',
+    dot: 'bg-surface border border-border',
   },
   red: {
-    bg: 'bg-red-100 dark:bg-red-950/60',
-    hoverBg: 'hover:bg-red-200/70 dark:hover:bg-red-900/60',
-    border: 'border-red-200 dark:border-red-900',
-    swatch: 'bg-red-200 dark:bg-red-800',
+    tint: 'bg-rose-50 dark:bg-rose-500/10',
+    strip: 'border-l-rose-400 dark:border-l-rose-500',
+    dot: 'bg-rose-400',
   },
   orange: {
-    bg: 'bg-orange-100 dark:bg-orange-950/60',
-    hoverBg: 'hover:bg-orange-200/70 dark:hover:bg-orange-900/60',
-    border: 'border-orange-200 dark:border-orange-900',
-    swatch: 'bg-orange-200 dark:bg-orange-800',
+    tint: 'bg-orange-50 dark:bg-orange-500/10',
+    strip: 'border-l-orange-400 dark:border-l-orange-500',
+    dot: 'bg-orange-400',
   },
   yellow: {
-    bg: 'bg-yellow-100 dark:bg-yellow-950/60',
-    hoverBg: 'hover:bg-yellow-200/70 dark:hover:bg-yellow-900/60',
-    border: 'border-yellow-200 dark:border-yellow-900',
-    swatch: 'bg-yellow-200 dark:bg-yellow-700',
+    tint: 'bg-amber-50 dark:bg-amber-500/10',
+    strip: 'border-l-amber-400 dark:border-l-amber-500',
+    dot: 'bg-amber-400',
   },
   green: {
-    bg: 'bg-green-100 dark:bg-green-950/60',
-    hoverBg: 'hover:bg-green-200/70 dark:hover:bg-green-900/60',
-    border: 'border-green-200 dark:border-green-900',
-    swatch: 'bg-green-200 dark:bg-green-800',
+    tint: 'bg-emerald-50 dark:bg-emerald-500/10',
+    strip: 'border-l-emerald-400 dark:border-l-emerald-500',
+    dot: 'bg-emerald-400',
   },
   teal: {
-    bg: 'bg-teal-100 dark:bg-teal-950/60',
-    hoverBg: 'hover:bg-teal-200/70 dark:hover:bg-teal-900/60',
-    border: 'border-teal-200 dark:border-teal-900',
-    swatch: 'bg-teal-200 dark:bg-teal-800',
+    tint: 'bg-teal-50 dark:bg-teal-500/10',
+    strip: 'border-l-teal-400 dark:border-l-teal-500',
+    dot: 'bg-teal-400',
   },
   blue: {
-    bg: 'bg-sky-100 dark:bg-sky-950/60',
-    hoverBg: 'hover:bg-sky-200/70 dark:hover:bg-sky-900/60',
-    border: 'border-sky-200 dark:border-sky-900',
-    swatch: 'bg-sky-200 dark:bg-sky-800',
+    tint: 'bg-sky-50 dark:bg-sky-500/10',
+    strip: 'border-l-sky-400 dark:border-l-sky-500',
+    dot: 'bg-sky-400',
   },
   darkblue: {
-    bg: 'bg-blue-100 dark:bg-blue-950/60',
-    hoverBg: 'hover:bg-blue-200/70 dark:hover:bg-blue-900/60',
-    border: 'border-blue-200 dark:border-blue-900',
-    swatch: 'bg-blue-300 dark:bg-blue-800',
+    tint: 'bg-blue-50 dark:bg-blue-500/10',
+    strip: 'border-l-blue-500 dark:border-l-blue-500',
+    dot: 'bg-blue-500',
   },
   purple: {
-    bg: 'bg-purple-100 dark:bg-purple-950/60',
-    hoverBg: 'hover:bg-purple-200/70 dark:hover:bg-purple-900/60',
-    border: 'border-purple-200 dark:border-purple-900',
-    swatch: 'bg-purple-200 dark:bg-purple-800',
+    tint: 'bg-violet-50 dark:bg-violet-500/10',
+    strip: 'border-l-violet-400 dark:border-l-violet-500',
+    dot: 'bg-violet-400',
   },
   pink: {
-    bg: 'bg-pink-100 dark:bg-pink-950/60',
-    hoverBg: 'hover:bg-pink-200/70 dark:hover:bg-pink-900/60',
-    border: 'border-pink-200 dark:border-pink-900',
-    swatch: 'bg-pink-200 dark:bg-pink-800',
+    tint: 'bg-pink-50 dark:bg-pink-500/10',
+    strip: 'border-l-pink-400 dark:border-l-pink-500',
+    dot: 'bg-pink-400',
   },
   brown: {
-    bg: 'bg-amber-100 dark:bg-amber-950/60',
-    hoverBg: 'hover:bg-amber-200/70 dark:hover:bg-amber-900/60',
-    border: 'border-amber-200 dark:border-amber-900',
-    swatch: 'bg-amber-300 dark:bg-amber-800',
+    tint: 'bg-amber-50 dark:bg-amber-700/10',
+    strip: 'border-l-amber-600 dark:border-l-amber-600',
+    dot: 'bg-amber-600',
   },
   gray: {
-    bg: 'bg-neutral-100 dark:bg-neutral-800/80',
-    hoverBg: 'hover:bg-neutral-200/70 dark:hover:bg-neutral-700/80',
-    border: 'border-neutral-200 dark:border-neutral-700',
-    swatch: 'bg-neutral-300 dark:bg-neutral-600',
+    tint: 'bg-slate-50 dark:bg-slate-400/10',
+    strip: 'border-l-slate-400 dark:border-l-slate-500',
+    dot: 'bg-slate-400',
   },
 }
 
@@ -124,8 +111,8 @@ export const NOTE_COLOR_LABELS: Record<NoteColor, string> = {
 }
 
 /**
- * Returns the Tailwind class bundle associated with a given note color token.
- * Falls back to the `default` palette when an unknown color is passed.
+ * Returns the styling token bundle for a given note color, falling back to the
+ * `default` (neutral) palette when an unknown color is passed.
  *
  * @param color The note color token to look up.
  */

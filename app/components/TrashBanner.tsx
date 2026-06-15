@@ -19,13 +19,13 @@ export interface TrashBannerProps {
  */
 export function TrashBanner({ count, onEmpty }: TrashBannerProps): JSX.Element {
   return (
-    <div className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300'>
+    <div className='mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted'>
       <span>Notes in Trash are deleted after 7 days.</span>
       <button
         type='button'
         onClick={onEmpty}
         disabled={count === 0}
-        className='rounded-md bg-neutral-200 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-neutral-700 transition hover:bg-neutral-300 disabled:opacity-50 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700'
+        className='rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40 disabled:hover:bg-transparent'
       >
         Empty trash
       </button>

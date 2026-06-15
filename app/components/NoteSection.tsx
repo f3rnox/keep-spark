@@ -19,9 +19,9 @@ export interface NoteSectionProps {
  */
 export function NoteSection({ label, children }: NoteSectionProps): JSX.Element {
   return (
-    <section className='mb-8'>
+    <section className='mb-10'>
       {label ? (
-        <h2 className='mb-2 px-1 text-[11px] font-medium uppercase tracking-[0.12em] text-neutral-500 dark:text-neutral-400'>
+        <h2 className='mb-3 px-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted'>
           {label}
         </h2>
       ) : null}

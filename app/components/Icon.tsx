@@ -20,6 +20,8 @@ export type IconName =
   | 'plus'
   | 'moreVertical'
   | 'deleteForever'
+  | 'sun'
+  | 'moon'
 
 const PATHS: Record<IconName, JSX.Element> = {
   menu: (
@@ -132,6 +134,21 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d='M6 7v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7' />
       <path d='m10 11 4 6m0-6-4 6' strokeLinecap='round' />
     </>
+  ),
+  sun: (
+    <>
+      <circle cx='12' cy='12' r='4' />
+      <path
+        d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41'
+        strokeLinecap='round'
+      />
+    </>
+  ),
+  moon: (
+    <path
+      d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z'
+      strokeLinejoin='round'
+    />
   ),
 }
 

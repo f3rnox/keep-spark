@@ -12,6 +12,9 @@ let snapshot: ReadonlyArray<Note> = [];
 let hydrated: boolean = false;
 const listeners: Set<() => void> = new Set();
 
+/** Stable empty snapshot returned during SSR; must be referentially cached. */
+const SERVER_SNAPSHOT: ReadonlyArray<Note> = [];
+
 function ensureHydrated(): void {
   if (hydrated) return;
   if (typeof window === "undefined") return;
@@ -33,7 +36,7 @@ export function getNotesSnapshot(): ReadonlyArray<Note> {
  * `useSyncExternalStore` during SSR.
  */
 export function getNotesServerSnapshot(): ReadonlyArray<Note> {
-  return [];
+  return SERVER_SNAPSHOT;
 }
 
 /**
