@@ -81,6 +81,8 @@ export interface Note {
   dueAt: number | null
   encrypted: boolean
   cipher: NoteCipher | null
+  isTask: boolean
+  taskDone: boolean
   createdAt: number
   updatedAt: number
 }

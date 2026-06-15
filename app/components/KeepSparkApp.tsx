@@ -14,6 +14,8 @@ import { collectLabels } from '../lib/collectLabels'
 import { filterNotes } from '../lib/filterNotes'
 import { findNoteByTitle } from '../lib/findNoteByTitle'
 import { partitionPinned } from '../lib/partitionPinned'
+import { partitionNotesAndTasks } from '../lib/partitionNotesAndTasks'
+import { sortTasks } from '../lib/sortTasks'
 import { isNoteEncrypted } from '../lib/isNoteEncrypted'
 import { reorderNotesInSection } from '../lib/reorderNotesInSection'
 import { sortNotes } from '../lib/sortNotes'
@@ -43,6 +45,9 @@ import { NoteSection } from './NoteSection'
 import { SearchScopeSelector } from './SearchScopeSelector'
 import { SortSelector } from './SortSelector'
 import { TrashBanner } from './TrashBanner'
+import { TaskCard } from './TaskCard'
+import { TaskComposer } from './TaskComposer'
+import { TaskList } from './TaskList'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { useNoteLayout } from '../lib/useNoteLayout'
@@ -75,6 +80,8 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
     canUndo,
     canRedo,
     addNote,
+    addTask,
+    toggleTaskDone,
     updateNote,
     togglePinned,
     setArchived,
@@ -157,15 +164,27 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
     [notes, view, query, listFilter, labelFilter, searchScope, selectedListId, listNameById],
   )
 
-  const sortedNotes: ReadonlyArray<Note> = useMemo(
-    (): ReadonlyArray<Note> => sortNotes(filteredNotes, sort),
-    [filteredNotes, sort],
+  const { tasks: filteredTasks, notes: filteredRegularNotes } = useMemo(
+    (): ReturnType<typeof partitionNotesAndTasks> => partitionNotesAndTasks(filteredNotes),
+    [filteredNotes],
+  )
+
+  const sortedTasks = useMemo(
+    (): ReturnType<typeof sortTasks> => sortTasks(filteredTasks),
+    [filteredTasks],
+  )
+
+  const sortedNoteItems: ReadonlyArray<Note> = useMemo(
+    (): ReadonlyArray<Note> => sortNotes(filteredRegularNotes, sort),
+    [filteredRegularNotes, sort],
   )
 
   const { pinned, others } = useMemo(
-    () => partitionPinned(sortedNotes),
-    [sortedNotes],
+    () => partitionPinned(sortedNoteItems),
+    [sortedNoteItems],
   )
+
+  const hasTasks: boolean = sortedTasks.active.length + sortedTasks.completed.length > 0
 
   const availableLabels: ReadonlyArray<string> = useMemo((): ReadonlyArray<string> => {
     const active: ReadonlyArray<Note> = notes.filter(
@@ -389,6 +408,47 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
     selectionActive,
   })
 
+  const renderTaskCard = (task: Note): JSX.Element => {
+    const listName: string | null =
+      task.listId !== null ? (listNameById.get(task.listId) ?? null) : null
+
+    return (
+      <TaskCard
+        key={task.id}
+        note={task}
+        view={view}
+        lists={lists}
+        listName={view === 'notes' ? listName : null}
+        searchQuery={query}
+        onToggleDone={toggleTaskDone}
+        onUpdateTitle={(id: string, title: string): void => updateNote(id, { title })}
+        onSetTrashed={requestSetTrashed}
+        onSetArchived={setArchived}
+        onDeleteForever={requestDeleteForever}
+        onSetListId={setListId}
+        onCreateList={addList}
+      />
+    )
+  }
+
+  const renderTasks = (): JSX.Element | null => {
+    if (!hasTasks) return null
+
+    return (
+      <NoteSection label='Tasks'>
+        <TaskList>
+          {sortedTasks.active.map(renderTaskCard)}
+          {sortedTasks.completed.length > 0 ? (
+            <p className='px-1 pt-2 text-[11px] font-medium uppercase tracking-[0.18em] text-muted'>
+              Completed
+            </p>
+          ) : null}
+          {sortedTasks.completed.map(renderTaskCard)}
+        </TaskList>
+      </NoteSection>
+    )
+  }
+
   const renderCard = (note: Note, sectionNotes: ReadonlyArray<Note>): JSX.Element => {
     const listName: string | null =
       note.listId !== null ? (listNameById.get(note.listId) ?? null) : null
@@ -445,7 +505,8 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
   )
 
   const renderNotes = (): JSX.Element => {
-    if (sortedNotes.length === 0) {
+    if (sortedNoteItems.length === 0) {
+      if (hasTasks) return <></>
       return (
         <EmptyState
           view={view}
@@ -475,7 +536,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
     return (
       <NoteSection>
         <NoteList layout={layout}>
-          {sortedNotes.map((note: Note) => renderCard(note, sortedNotes))}
+          {sortedNoteItems.map((note: Note) => renderCard(note, sortedNoteItems))}
         </NoteList>
       </NoteSection>
     )
@@ -573,7 +634,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
             ) : null}
 
             {showEditor ? (
-              <div className='mb-8 sm:mb-12'>
+              <div className='mb-8 space-y-3 sm:mb-12'>
                 <NoteEditor
                   ref={editorRef}
                   listId={editorListId}
@@ -588,6 +649,12 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
                     addNote(title, content, color, labels, listId ?? null, encryption)
                   }
                 />
+                <TaskComposer
+                  listId={editorListId}
+                  onCreate={(title: string, listId?: string | null): void => {
+                    addTask(title, listId ?? null)
+                  }}
+                />
               </div>
             ) : null}
 
@@ -595,6 +662,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
               <TrashBanner count={counts.trash} onEmpty={requestEmptyTrash} />
             ) : null}
 
+            {renderTasks()}
             {renderNotes()}
           </>
         )}

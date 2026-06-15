@@ -35,6 +35,7 @@ export function coerceNote(entry: unknown): Note | null {
 
   const encrypted: boolean = candidate.encrypted === true
   const cipher = encrypted ? coerceNoteCipher(candidate.cipher) : null
+  const isTask: boolean = candidate.isTask === true
 
   return {
     id: candidate.id,
@@ -50,6 +51,8 @@ export function coerceNote(entry: unknown): Note | null {
     dueAt,
     encrypted: encrypted && cipher !== null,
     cipher,
+    isTask,
+    taskDone: isTask ? (candidate.taskDone ?? false) : false,
     createdAt: candidate.createdAt ?? Date.now(),
     updatedAt: candidate.updatedAt ?? Date.now(),
   }

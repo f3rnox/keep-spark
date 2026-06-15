@@ -29,6 +29,8 @@ export function createNote(title: string, content: string): Note {
     dueAt: null,
     encrypted: false,
     cipher: null,
+    isTask: false,
+    taskDone: false,
     createdAt: now,
     updatedAt: now,
   }

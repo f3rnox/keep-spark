@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
 import type { Note, NoteColor, NoteCipher } from './types'
 import { createNote } from './createNote'
+import { createTask } from './createTask'
 import { reorderByIds } from './reorderByIds'
 import {
   canRedoNotes,
@@ -39,6 +40,8 @@ export interface NotesApi {
     listId?: string | null,
     encryption?: { encrypted: boolean, cipher: NoteCipher | null },
   ) => Note | null
+  addTask: (title: string, listId?: string | null) => Note | null
+  toggleTaskDone: (id: string) => void
   updateNote: (id: string, patch: NoteUpdate, options?: { recordHistory?: boolean }) => void
   togglePinned: (id: string) => void
   setArchived: (id: string, archived: boolean) => void
@@ -108,6 +111,36 @@ export function useNotes(): NotesApi {
     },
     [],
   )
+
+  const addTask = useCallback(
+    (title: string, listId: string | null = null): Note | null => {
+      const trimmed: string = title.trim()
+      if (trimmed.length === 0) return null
+
+      const task: Note = createTask(trimmed, listId)
+      setNotes(
+        (prev: ReadonlyArray<Note>): ReadonlyArray<Note> => [task, ...prev],
+      )
+      return task
+    },
+    [],
+  )
+
+  const toggleTaskDone = useCallback((id: string): void => {
+    setNotes(
+      (prev: ReadonlyArray<Note>): ReadonlyArray<Note> =>
+        prev.map(
+          (note: Note): Note =>
+            note.id === id && note.isTask
+              ? {
+                  ...note,
+                  taskDone: !note.taskDone,
+                  updatedAt: Date.now(),
+                }
+              : note,
+        ),
+    )
+  }, [])
 
   const updateNote = useCallback(
     (id: string, patch: NoteUpdate, options?: { recordHistory?: boolean }): void => {
@@ -311,6 +344,8 @@ export function useNotes(): NotesApi {
       canUndo,
       canRedo,
       addNote,
+      addTask,
+      toggleTaskDone,
       updateNote,
       togglePinned,
       setArchived,
@@ -333,6 +368,8 @@ export function useNotes(): NotesApi {
       canUndo,
       canRedo,
       addNote,
+      addTask,
+      toggleTaskDone,
       updateNote,
       togglePinned,
       setArchived,
