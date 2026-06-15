@@ -32,6 +32,7 @@ import { EmptyState } from './EmptyState'
 import { Header } from './Header'
 import { LabelFilter } from './LabelFilter'
 import { LayoutSelector } from './LayoutSelector'
+import { EditorPaneSelector } from './EditorPaneSelector'
 import { ListBrowser } from './ListBrowser'
 import { ListDetailHeader } from './ListDetailHeader'
 import { NavTabs } from './NavTabs'
@@ -45,6 +46,7 @@ import { TrashBanner } from './TrashBanner'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { useNoteLayout } from '../lib/useNoteLayout'
+import { useMediaQuery } from '../lib/useMediaQuery'
 
 /**
  * Props for the KeepSpark app shell.
@@ -106,7 +108,8 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set())
   const [selectionMode, setSelectionMode] = useState<boolean>(false)
   const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null)
-  const { layout, setLayout } = useNoteLayout()
+  const { layout, setLayout, editorPane, setEditorPane } = useNoteLayout()
+  const isDesktop: boolean = useMediaQuery('(min-width: 1024px)')
 
   const searchRef = useRef<HTMLInputElement | null>(null)
   const editorRef = useRef<NoteEditorHandle | null>(null)
@@ -175,6 +178,9 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
     if (!editing) return null
     return notes.find((note: Note): boolean => note.id === editing.id) ?? null
   }, [editing, notes])
+
+  const splitEditorActive: boolean =
+    editorPane === 'split' && isDesktop && editingNote !== null
 
   const selectionActive: boolean = selectionMode || selectedIds.size > 0
 
@@ -505,6 +511,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
                 ) : null}
                 <SortSelector sort={sort} onChange={setSortPreference} />
                 <LayoutSelector layout={layout} onChange={setLayout} />
+                <EditorPaneSelector editorPane={editorPane} onChange={setEditorPane} />
                 <IconButton
                   label={selectionMode ? 'Exit selection mode' : 'Select notes'}
                   active={selectionMode}
@@ -535,7 +542,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
       </div>
 
       <main
-        className={`mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-6 sm:py-10${selectionActive ? ' pb-28 sm:pb-10' : ''}`}
+        className={`mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-6 sm:py-10${selectionActive ? ' pb-28 sm:pb-10' : ''}${splitEditorActive ? ' lg:pr-[min(480px,42vw)]' : ''}`}
       >
         {browsingLists ? (
           <>
@@ -636,6 +643,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
           note={editingNote}
           notes={notes}
           lists={lists}
+          presentation={splitEditorActive ? 'panel' : 'overlay'}
           onSave={(id: string, patch: EditNoteSavePatch): void => updateNote(id, patch)}
           onTogglePinned={togglePinned}
           onSetArchived={setArchived}

@@ -1,7 +1,7 @@
 'use client'
 
 import { applyTheme } from './applyTheme'
-import type { Theme } from './theme'
+import { DEFAULT_THEME, isTheme, nextTheme, type Theme } from './theme'
 
 type ThemeListener = () => void
 
@@ -24,14 +24,16 @@ export function subscribeTheme(listener: ThemeListener): () => void {
  * bootstrap script or a previous toggle.
  */
 export function getThemeSnapshot(): Theme {
-  return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  const datasetTheme: string | undefined = document.documentElement.dataset.theme
+  if (datasetTheme !== undefined && isTheme(datasetTheme)) return datasetTheme
+  return document.documentElement.classList.contains('dark') ? 'dark' : DEFAULT_THEME
 }
 
 /**
  * Server snapshot used during SSR and the initial hydration render.
  */
 export function getThemeServerSnapshot(): Theme {
-  return 'light'
+  return DEFAULT_THEME
 }
 
 /**
@@ -47,9 +49,8 @@ export function setTheme(theme: Theme): void {
 }
 
 /**
- * Flips between the light and dark themes based on the current document state.
+ * Advances to the next theme in the palette list.
  */
 export function toggleTheme(): void {
-  const current: Theme = getThemeSnapshot()
-  setTheme(current === 'dark' ? 'light' : 'dark')
+  setTheme(nextTheme(getThemeSnapshot()))
 }

@@ -33,14 +33,12 @@ export function EncryptionSettingsPanel(): JSX.Element {
   const [passkeyPassword, setPasskeyPassword] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<boolean>(false)
-  const [success, setSuccess] = useState<string | null>(null)
 
   const passkeyAvailable: boolean = isPasskeyUnlockAvailable()
 
   const handleSetPassword = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
     setError(null)
-    setSuccess(null)
 
     if (password.length === 0) {
       setError('Enter a password')
@@ -56,7 +54,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
       await setMasterPassword(password)
       setPassword('')
       setConfirmPassword('')
-      setSuccess('Encryption password saved. Locked notes can be unlocked from the toolbar.')
     } catch {
       setError('Could not save encryption password')
     } finally {
@@ -67,8 +64,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
   const handleChangePassword = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
     setError(null)
-    setSuccess(null)
-
     if (currentPassword.length === 0 || password.length === 0) {
       setError('Enter the current and new passwords')
       return
@@ -84,7 +79,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
       setCurrentPassword('')
       setPassword('')
       setConfirmPassword('')
-      setSuccess('Encryption password updated.')
     } catch {
       setError('Incorrect current password')
     } finally {
@@ -94,8 +88,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
 
   const handleClearPassword = async (): Promise<void> => {
     setError(null)
-    setSuccess(null)
-
     if (currentPassword.length === 0) {
       setError('Enter the current password to remove encryption')
       return
@@ -106,7 +98,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
       await clearMasterPassword(currentPassword)
       clearPasskey()
       setCurrentPassword('')
-      setSuccess('Encryption password removed.')
     } catch {
       setError('Incorrect password')
     } finally {
@@ -117,8 +108,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
   const handleRegisterPasskey = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
     setError(null)
-    setSuccess(null)
-
     if (passkeyPassword.length === 0) {
       setError('Enter your encryption password to register a passkey')
       return
@@ -128,7 +117,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
     try {
       await registerPasskey(passkeyPassword)
       setPasskeyPassword('')
-      setSuccess('Passkey registered. Use it to unlock encryption without typing your password.')
     } catch (passkeyError: unknown) {
       setError(passkeyError instanceof Error ? passkeyError.message : 'Could not register passkey')
     } finally {
@@ -241,7 +229,6 @@ export function EncryptionSettingsPanel(): JSX.Element {
           )}
 
           {error ? <p className='text-sm text-red-600 dark:text-red-400'>{error}</p> : null}
-          {success ? <p className='text-sm text-foreground'>{success}</p> : null}
 
           {!hasMasterPassword ? (
             <p className='text-sm text-muted'>

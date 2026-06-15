@@ -63,12 +63,18 @@ export interface EditNoteSavePatch {
 }
 
 /**
+ * How the note editor is mounted in the page.
+ */
+export type EditNotePresentation = 'overlay' | 'panel'
+
+/**
  * Props for the `EditNoteModal` overlay.
  */
 export interface EditNoteModalProps {
   note: Note
   notes: ReadonlyArray<Note>
   lists: ReadonlyArray<NoteList>
+  presentation?: EditNotePresentation
   onSave: (id: string, patch: EditNoteSavePatch) => void
   onTogglePinned: (id: string) => void
   onSetArchived: (id: string, archived: boolean) => void
@@ -88,6 +94,7 @@ export function EditNoteModal({
   note,
   notes,
   lists,
+  presentation = 'overlay',
   onSave,
   onTogglePinned,
   onSetArchived,
@@ -369,41 +376,18 @@ export function EditNoteModal({
 
   const classes = getNoteColorClasses(color)
   const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
+  const isPanel: boolean = presentation === 'panel'
 
-  return (
-    <>
-      {showLockPrompt ? (
-        <PasswordPromptModal
-          title='Lock note'
-          description={
-            hasMasterPassword
-              ? 'Enter your encryption password to lock this note.'
-              : 'Choose a password. You will need it to view this note\'s content again.'
-          }
-          confirmLabel='Lock'
-          requireConfirm={!hasMasterPassword}
-          error={lockError}
-          busy={lockBusy}
-          onSubmit={handleLockPromptSubmit}
-          onCancel={(): void => {
-            setShowLockPrompt(false)
-            setLockError(null)
-          }}
-        />
-      ) : null}
-
-      <div
-        role='dialog'
-        aria-modal='true'
-        aria-label='Edit note'
-        onClick={close}
-        className='fixed inset-0 z-40 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4'
-      >
-        <div
-          onClick={stop}
-          onKeyDown={stop}
-          className={`relative flex h-dvh max-h-dvh w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-surface sm:h-auto sm:max-h-[90vh] sm:rounded-2xl ${classes.tint} ${stripClass} text-foreground shadow-2xl shadow-black/20`}
-        >
+  const editorCard = (
+    <div
+      onClick={isPanel ? undefined : stop}
+      onKeyDown={isPanel ? undefined : stop}
+      className={`relative flex flex-col overflow-hidden bg-surface ${classes.tint} ${stripClass} text-foreground ${
+        isPanel
+          ? 'h-full min-h-0 w-full border-0 shadow-none'
+          : 'h-dvh max-h-dvh w-full max-w-3xl rounded-t-2xl border border-border shadow-2xl shadow-black/20 sm:h-auto sm:max-h-[90vh] sm:rounded-2xl'
+      }`}
+    >
           <div className='flex items-start justify-between gap-2 px-4 pt-3 sm:px-5 sm:pt-4'>
             <div className='flex min-w-0 flex-1 items-center gap-2'>
               {isEncryptedDraft ? (
@@ -612,7 +596,49 @@ export function EditNoteModal({
             ) : null}
           </div>
         </div>
-      </div>
+  )
+
+  return (
+    <>
+      {showLockPrompt ? (
+        <PasswordPromptModal
+          title='Lock note'
+          description={
+            hasMasterPassword
+              ? 'Enter your encryption password to lock this note.'
+              : 'Choose a password. You will need it to view this note\'s content again.'
+          }
+          confirmLabel='Lock'
+          requireConfirm={!hasMasterPassword}
+          error={lockError}
+          busy={lockBusy}
+          onSubmit={handleLockPromptSubmit}
+          onCancel={(): void => {
+            setShowLockPrompt(false)
+            setLockError(null)
+          }}
+        />
+      ) : null}
+
+      {isPanel ? (
+        <aside
+          role='complementary'
+          aria-label='Edit note'
+          className='fixed top-14 right-0 bottom-0 z-40 flex w-[min(480px,42vw)] min-w-[320px] flex-col border-l border-border bg-surface shadow-xl shadow-black/10 sm:top-16'
+        >
+          {editorCard}
+        </aside>
+      ) : (
+        <div
+          role='dialog'
+          aria-modal='true'
+          aria-label='Edit note'
+          onClick={close}
+          className='fixed inset-0 z-40 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4'
+        >
+          {editorCard}
+        </div>
+      )}
     </>
   )
 }

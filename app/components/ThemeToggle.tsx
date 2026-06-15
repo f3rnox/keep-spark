@@ -1,24 +1,24 @@
 'use client'
 
 import type { JSX } from 'react'
+import { THEME_DEFINITIONS } from '../lib/theme'
 import { useTheme } from '../lib/useTheme'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 
 /**
- * Single-button switch that flips between the light and dark themes. Shows a
- * sun while dark (tap to lighten) and a moon while light (tap to darken).
+ * Header control that cycles through the available color palettes.
  */
 export function ThemeToggle(): JSX.Element {
   const { theme, toggleTheme } = useTheme()
-  const isDark: boolean = theme === 'dark'
+  const definition = THEME_DEFINITIONS[theme]
 
   return (
     <IconButton
-      label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      label={`Theme: ${definition.label}. Tap to switch palette.`}
       onClick={toggleTheme}
     >
-      <Icon name={isDark ? 'sun' : 'moon'} size={18} />
+      <Icon name={definition.isDark ? 'moon' : 'sun'} size={18} />
     </IconButton>
   )
 }

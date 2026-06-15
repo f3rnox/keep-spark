@@ -26,6 +26,11 @@ export type NoteView = 'notes' | 'lists' | 'archive' | 'trash'
 export type NoteLayout = 'grid' | 'stacked'
 
 /**
+ * How the note editor is presented on wide screens.
+ */
+export type EditorPane = 'overlay' | 'split'
+
+/**
  * Scope applied when filtering notes by list membership.
  */
 export type ListFilter = 'inbox' | 'all' | string

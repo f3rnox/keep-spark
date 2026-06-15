@@ -1,7 +1,7 @@
 'use client'
 
 import type { JSX } from 'react'
-import type { NoteLayout, NoteSort } from '../../lib/types'
+import type { EditorPane, NoteLayout, NoteSort } from '../../lib/types'
 import { useNoteLayout } from '../../lib/useNoteLayout'
 import { useSortPreference } from '../../lib/useSortPreference'
 import { SettingsRow } from './SettingsRow'
@@ -21,7 +21,7 @@ const SORT_OPTIONS: ReadonlyArray<{ value: NoteSort; label: string }> = [
  */
 export function GeneralSettingsPanel(): JSX.Element {
   const { sort, setSort } = useSortPreference()
-  const { layout, setLayout } = useNoteLayout()
+  const { layout, setLayout, editorPane, setEditorPane } = useNoteLayout()
 
   return (
     <div className='space-y-8'>
@@ -69,6 +69,32 @@ export function GeneralSettingsPanel(): JSX.Element {
                   }`}
                 >
                   {value}
+                </button>
+              )
+            })}
+          </div>
+        </SettingsRow>
+
+        <SettingsRow
+          label='Editor layout'
+          description='On wide screens, keep the note grid visible while editing in a side panel.'
+        >
+          <div className='inline-flex rounded-lg border border-border bg-canvas p-1'>
+            {(['overlay', 'split'] as const).map((value: EditorPane): JSX.Element => {
+              const active: boolean = editorPane === value
+              return (
+                <button
+                  key={value}
+                  type='button'
+                  onClick={(): void => setEditorPane(value)}
+                  aria-pressed={active}
+                  className={`rounded-md px-3 py-1.5 text-sm capitalize transition-colors ${
+                    active
+                      ? 'bg-accent text-on-accent'
+                      : 'text-muted hover:text-foreground'
+                  }`}
+                >
+                  {value === 'split' ? 'Split pane' : 'Overlay'}
                 </button>
               )
             })}

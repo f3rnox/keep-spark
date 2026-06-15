@@ -36,6 +36,8 @@ export type IconName =
   | 'upload'
   | 'lock'
   | 'lockOpen'
+  | 'panel'
+  | 'overlay'
 
 const PATHS: Record<IconName, JSX.Element> = {
   menu: (
@@ -262,6 +264,18 @@ const PATHS: Record<IconName, JSX.Element> = {
     <>
       <rect x='5' y='11' width='14' height='10' rx='2' />
       <path d='M8 11V8a4 4 0 0 1 7.5-1' strokeLinecap='round' />
+    </>
+  ),
+  panel: (
+    <>
+      <rect x='4' y='5' width='16' height='14' rx='2' />
+      <path d='M14 5v14' strokeLinecap='round' />
+    </>
+  ),
+  overlay: (
+    <>
+      <rect x='5' y='7' width='14' height='12' rx='2' />
+      <path d='M9 5h6' strokeLinecap='round' />
     </>
   ),
 }

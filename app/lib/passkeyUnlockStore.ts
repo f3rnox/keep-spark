@@ -1,3 +1,5 @@
+import { showSettingSaved } from './settingToastStore'
+
 /**
  * Stored passkey metadata used to unlock the master encryption password.
  */
@@ -89,6 +91,7 @@ export function setPasskeyUnlockRecord(record: PasskeyUnlockRecord): void {
   snapshot = record
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record))
   for (const listener of listeners) listener()
+  showSettingSaved('Passkey registered')
 }
 
 /**
@@ -97,7 +100,9 @@ export function setPasskeyUnlockRecord(record: PasskeyUnlockRecord): void {
 export function clearPasskeyUnlockRecord(): void {
   if (typeof window === 'undefined') return
   ensureHydrated()
+  if (snapshot === null) return
   snapshot = null
   window.localStorage.removeItem(STORAGE_KEY)
   for (const listener of listeners) listener()
+  showSettingSaved('Passkey removed')
 }

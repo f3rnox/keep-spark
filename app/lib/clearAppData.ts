@@ -13,6 +13,7 @@ import { clearMasterPasswordVerifier } from './masterPasswordStore'
 import { clearPasskeyUnlockRecord } from './passkeyUnlockStore'
 import { clearAutoLockMinutes } from './autoLockStore'
 import { lockGlobalEncryptionSession } from './globalEncryptionSession'
+import { runWithoutSettingToast } from './settingToastStore'
 
 /**
  * Removes all locally stored notes, lists, and preferences.
@@ -24,12 +25,14 @@ export async function clearAppData(): Promise<void> {
   setLists((): ReadonlyArray<never> => [])
   clearNotesHistory()
   clearRecentSearches()
-  setSort('updated')
-  setNoteLayout(DEFAULT_NOTE_LAYOUT)
-  setTheme('light')
-  clearMasterPasswordVerifier()
-  clearPasskeyUnlockRecord()
-  clearAutoLockMinutes()
+  runWithoutSettingToast((): void => {
+    setSort('updated')
+    setNoteLayout(DEFAULT_NOTE_LAYOUT)
+    setTheme('light')
+    clearMasterPasswordVerifier()
+    clearPasskeyUnlockRecord()
+    clearAutoLockMinutes()
+  })
   lockGlobalEncryptionSession()
 
   try {

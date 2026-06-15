@@ -1,16 +1,9 @@
 'use client'
 
 import type { JSX } from 'react'
-import type { Theme } from '../../lib/theme'
+import { THEME_DEFINITIONS, THEME_ORDER, type Theme } from '../../lib/theme'
 import { useTheme } from '../../lib/useTheme'
-import { Icon } from '../Icon'
-import { SettingsRow } from './SettingsRow'
 import { SettingsSection } from './SettingsSection'
-
-const THEME_OPTIONS: ReadonlyArray<{ value: Theme; label: string; icon: 'sun' | 'moon' }> = [
-  { value: 'light', label: 'Light', icon: 'sun' },
-  { value: 'dark', label: 'Dark', icon: 'moon' },
-]
 
 /**
  * Appearance settings for theme selection.
@@ -21,35 +14,44 @@ export function AppearanceSettingsPanel(): JSX.Element {
   return (
     <div className='space-y-8'>
       <SettingsSection
-        title='Theme'
+        title='Color palettes'
         description='Choose how KeepSpark looks. Your choice is saved on this device.'
       >
-        <SettingsRow
-          label='Color scheme'
-          description='Light uses warm neutrals; dark uses a near-black canvas.'
-        >
-          <div className='inline-flex rounded-lg border border-border bg-canvas p-1'>
-            {THEME_OPTIONS.map((option): JSX.Element => {
-              const active: boolean = theme === option.value
-              return (
-                <button
-                  key={option.value}
-                  type='button'
-                  onClick={(): void => setTheme(option.value)}
-                  aria-pressed={active}
-                  className={`inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors ${
-                    active
-                      ? 'bg-accent text-on-accent'
-                      : 'text-muted hover:text-foreground'
-                  }`}
-                >
-                  <Icon name={option.icon} size={16} />
-                  {option.label}
-                </button>
-              )
-            })}
-          </div>
-        </SettingsRow>
+        <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
+          {THEME_ORDER.map((value: Theme): JSX.Element => {
+            const option = THEME_DEFINITIONS[value]
+            const active: boolean = theme === value
+
+            return (
+              <button
+                key={value}
+                type='button'
+                onClick={(): void => setTheme(value)}
+                aria-pressed={active}
+                className={`rounded-xl border p-3 text-left transition-colors ${
+                  active
+                    ? 'border-accent bg-surface-hover ring-2 ring-ring'
+                    : 'border-border bg-surface hover:bg-surface-hover'
+                }`}
+              >
+                <div className='mb-3 flex gap-1.5'>
+                  {option.swatch.map(
+                    (color: string): JSX.Element => (
+                      <span
+                        key={color}
+                        aria-hidden='true'
+                        className='h-8 flex-1 rounded-md border border-black/10'
+                        style={{ backgroundColor: color }}
+                      />
+                    ),
+                  )}
+                </div>
+                <p className='text-sm font-medium text-foreground'>{option.label}</p>
+                <p className='mt-1 text-xs leading-relaxed text-muted'>{option.description}</p>
+              </button>
+            )
+          })}
+        </div>
       </SettingsSection>
     </div>
   )

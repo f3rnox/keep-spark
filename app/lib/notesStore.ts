@@ -18,15 +18,15 @@ export interface SetNotesOptions {
   recordHistory?: boolean
 }
 
-let snapshot: ReadonlyArray<Note> = []
+/** Stable empty snapshot returned during SSR; must be referentially cached. */
+const SERVER_SNAPSHOT: ReadonlyArray<Note> = []
+
+let snapshot: ReadonlyArray<Note> = SERVER_SNAPSHOT
 let hydrated: boolean = false
 let hydrating: Promise<void> | null = null
 let historyVersion: number = 0
 const listeners: Set<() => void> = new Set()
 const historyListeners: Set<() => void> = new Set()
-
-/** Stable empty snapshot returned during SSR; must be referentially cached. */
-const SERVER_SNAPSHOT: ReadonlyArray<Note> = []
 
 function notifyListeners(): void {
   for (const listener of listeners) listener()
@@ -48,7 +48,7 @@ function startHydration(): void {
       notifyListeners()
     })
     .catch((): void => {
-      snapshot = []
+      snapshot = SERVER_SNAPSHOT
       hydrated = true
       hydrating = null
       notifyListeners()

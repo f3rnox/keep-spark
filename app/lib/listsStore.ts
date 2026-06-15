@@ -2,13 +2,13 @@ import type { NoteList } from './types'
 import { loadListsAsync } from './listsStorage'
 import { saveLists } from './saveLists'
 
-let snapshot: ReadonlyArray<NoteList> = []
+/** Stable empty snapshot returned during SSR. */
+const SERVER_SNAPSHOT: ReadonlyArray<NoteList> = []
+
+let snapshot: ReadonlyArray<NoteList> = SERVER_SNAPSHOT
 let hydrated: boolean = false
 let hydrating: Promise<void> | null = null
 const listeners: Set<() => void> = new Set()
-
-/** Stable empty snapshot returned during SSR. */
-const SERVER_SNAPSHOT: ReadonlyArray<NoteList> = []
 
 function notifyListeners(): void {
   for (const listener of listeners) listener()
@@ -25,7 +25,7 @@ function startHydration(): void {
       notifyListeners()
     })
     .catch((): void => {
-      snapshot = []
+      snapshot = SERVER_SNAPSHOT
       hydrated = true
       hydrating = null
       notifyListeners()
