@@ -3,28 +3,37 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ChangeEvent,
+  type ClipboardEvent,
+  type DragEvent,
   type JSX,
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
 import type { Note, NoteColor, NoteList } from '../lib/types'
+import { findBacklinks } from '../lib/findBacklinks'
 import { getNoteColorClasses } from '../lib/colors'
+import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
+import { insertImageMarkdown } from '../lib/insertImageMarkdown'
+import { readImageDataUrls } from '../lib/readImageDataUrls'
+import { BacklinksPanel } from './BacklinksPanel'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { LabelEditor } from './LabelEditor'
 import { ListPicker } from './ListPicker'
 import { MarkdownToolbar } from './MarkdownToolbar'
-import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
+import { NoteContent } from './NoteContent'
 
 /**
  * Props for the `EditNoteModal` overlay.
  */
 export interface EditNoteModalProps {
   note: Note
+  notes: ReadonlyArray<Note>
   lists: ReadonlyArray<NoteList>
   onSave: (
     id: string,
@@ -40,6 +49,7 @@ export interface EditNoteModalProps {
   onSetTrashed: (id: string, trashed: boolean) => void
   onSetListId: (id: string, listId: string | null) => void
   onCreateList?: (name: string) => NoteList | null
+  onOpenNote: (note: Note) => void
   onClose: () => void
 }
 
@@ -47,16 +57,10 @@ export interface EditNoteModalProps {
  * Modal note editor that opens when the user clicks an existing note tile,
  * mirroring Keep's expanded card. Auto-saves any pending edits when the
  * user closes the modal.
- *
- * @param props.note The note being edited (used to seed the form state).
- * @param props.onSave Persists the latest title/content/color/labels.
- * @param props.onTogglePinned Pin/unpin the note.
- * @param props.onSetArchived Archive/unarchive the note.
- * @param props.onSetTrashed Move the note to trash.
- * @param props.onClose Closes the modal (after autosaving).
  */
 export function EditNoteModal({
   note,
+  notes,
   lists,
   onSave,
   onTogglePinned,
@@ -64,6 +68,7 @@ export function EditNoteModal({
   onSetTrashed,
   onSetListId,
   onCreateList,
+  onOpenNote,
   onClose,
 }: EditNoteModalProps): JSX.Element {
   const [title, setTitle] = useState<string>(note.title)
@@ -71,7 +76,13 @@ export function EditNoteModal({
   const [labels, setLabels] = useState<ReadonlyArray<string>>(note.labels)
   const [color, setColor] = useState<NoteColor>(note.color)
   const [showPalette, setShowPalette] = useState<boolean>(false)
+  const [showPreview, setShowPreview] = useState<boolean>(false)
   const contentRef = useRef<HTMLTextAreaElement | null>(null)
+
+  const backlinks: ReadonlyArray<Note> = useMemo(
+    (): ReadonlyArray<Note> => findBacklinks(notes, { ...note, title }),
+    [notes, note, title],
+  )
 
   const close = useCallback((): void => {
     onSave(note.id, { title, content, color, labels })
@@ -93,6 +104,25 @@ export function EditNoteModal({
     event.stopPropagation()
   }
 
+  const handleImageInsert = async (
+    event: ClipboardEvent<HTMLTextAreaElement> | DragEvent<HTMLTextAreaElement>,
+  ): Promise<void> => {
+    event.preventDefault()
+    const urls: ReadonlyArray<string> = await readImageDataUrls(event.nativeEvent)
+    if (urls.length === 0) return
+
+    const textarea: HTMLTextAreaElement | null = contentRef.current
+    const start: number = textarea?.selectionStart ?? content.length
+    const end: number = textarea?.selectionEnd ?? content.length
+    let next: string = content
+
+    for (const url of urls) {
+      next = insertImageMarkdown(next, url, start, end)
+    }
+
+    setContent(next)
+  }
+
   const classes = getNoteColorClasses(color)
   const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
 
@@ -107,7 +137,7 @@ export function EditNoteModal({
       <div
         onClick={stop}
         onKeyDown={stop}
-        className={`relative flex w-full max-w-xl flex-col rounded-2xl border border-border bg-surface ${classes.tint} ${stripClass} text-foreground shadow-2xl shadow-black/20`}
+        className={`relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-border bg-surface ${classes.tint} ${stripClass} text-foreground shadow-2xl shadow-black/20`}
       >
         <div className='flex items-start justify-between gap-2 px-5 pt-4'>
           <input
@@ -118,50 +148,85 @@ export function EditNoteModal({
             className='w-full bg-transparent text-lg font-semibold tracking-tight outline-none placeholder:font-normal placeholder:text-muted'
             autoFocus
           />
-          <span
-            role='button'
-            tabIndex={0}
-            aria-label={note.pinned ? 'Unpin note' : 'Pin note'}
-            title={note.pinned ? 'Unpin note' : 'Pin note'}
-            onClick={(): void => onTogglePinned(note.id)}
-            onKeyDown={(event: KeyboardEvent<HTMLSpanElement>): void => {
-              if (event.key !== 'Enter' && event.key !== ' ') return
-              event.preventDefault()
-              onTogglePinned(note.id)
-            }}
-            className={`inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-              note.pinned ? 'text-foreground' : 'text-muted'
-            }`}
-          >
-            <Icon name={note.pinned ? 'pinFilled' : 'pin'} />
-          </span>
+          <div className='flex shrink-0 items-center gap-1'>
+            <IconButton
+              label={showPreview ? 'Hide preview' : 'Show preview'}
+              active={showPreview}
+              onClick={(): void => setShowPreview((prev: boolean): boolean => !prev)}
+            >
+              <Icon name={showPreview ? 'eyeOff' : 'eye'} size={18} />
+            </IconButton>
+            <span
+              role='button'
+              tabIndex={0}
+              aria-label={note.pinned ? 'Unpin note' : 'Pin note'}
+              title={note.pinned ? 'Unpin note (p)' : 'Pin note (p)'}
+              onClick={(): void => onTogglePinned(note.id)}
+              onKeyDown={(event: KeyboardEvent<HTMLSpanElement>): void => {
+                if (event.key !== 'Enter' && event.key !== ' ') return
+                event.preventDefault()
+                onTogglePinned(note.id)
+              }}
+              className={`inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                note.pinned ? 'text-foreground' : 'text-muted'
+              }`}
+            >
+              <Icon name={note.pinned ? 'pinFilled' : 'pin'} />
+            </span>
+          </div>
         </div>
 
-        <div className='px-5 pt-2'>
-          <MarkdownToolbar
-            textareaRef={contentRef}
-            value={content}
-            onChange={setContent}
-          />
-        </div>
+        <div className={`flex min-h-0 flex-1 ${showPreview ? 'flex-col lg:flex-row' : 'flex-col'}`}>
+          <div className={`flex min-h-0 flex-col ${showPreview ? 'lg:w-1/2 lg:border-r lg:border-border' : 'w-full'}`}>
+            <div className='px-5 pt-2'>
+              <MarkdownToolbar
+                textareaRef={contentRef}
+                value={content}
+                onChange={setContent}
+              />
+            </div>
 
-        <textarea
-          ref={contentRef}
-          value={content}
-          onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
-            setContent(event.target.value)
-          }
-          onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
-            handleMarkdownKeyDown(event, content, setContent)
-          }}
-          placeholder='Write something...'
-          rows={8}
-          className='w-full resize-none bg-transparent px-5 py-3 text-[15px] leading-relaxed outline-none placeholder:text-muted'
-        />
+            <textarea
+              ref={contentRef}
+              value={content}
+              onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
+                setContent(event.target.value)
+              }
+              onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
+                handleMarkdownKeyDown(event, content, setContent)
+              }}
+              onPaste={handleImageInsert}
+              onDrop={handleImageInsert}
+              placeholder='Write something... Use [[Note Title]] to link notes.'
+              rows={showPreview ? 10 : 8}
+              className='min-h-[200px] w-full flex-1 resize-none bg-transparent px-5 py-3 text-[15px] leading-relaxed outline-none placeholder:text-muted'
+            />
+          </div>
+
+          {showPreview ? (
+            <div className='min-h-0 flex-1 overflow-y-auto px-5 py-3 lg:w-1/2'>
+              <p className='mb-2 text-xs font-medium text-muted'>Preview</p>
+              <NoteContent
+                content={content}
+                className='text-sm text-foreground'
+                onNoteLinkClick={(linkTitle: string): void => {
+                  const target: Note | undefined = notes.find(
+                    (candidate: Note): boolean =>
+                      !candidate.trashed &&
+                      candidate.title.trim().toLowerCase() === linkTitle.trim().toLowerCase(),
+                  )
+                  if (target) onOpenNote(target)
+                }}
+              />
+            </div>
+          ) : null}
+        </div>
 
         <div className='px-5 pb-2'>
           <LabelEditor labels={labels} onChange={setLabels} />
         </div>
+
+        <BacklinksPanel backlinks={backlinks} onOpen={onOpenNote} />
 
         <div className='relative flex items-center justify-between px-3 pb-3 pt-1'>
           <div className='flex items-center gap-1'>

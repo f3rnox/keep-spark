@@ -25,6 +25,7 @@ export function createNote(title: string, content: string): Note {
     pinned: false,
     archived: false,
     trashed: false,
+    trashedAt: null,
     createdAt: now,
     updatedAt: now,
   }

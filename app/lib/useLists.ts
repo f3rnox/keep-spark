@@ -4,6 +4,7 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react'
 import type { NoteList } from './types'
 import { createList } from './createList'
 import { normalizeLabel } from './normalizeLabel'
+import { reorderByIds } from './reorderByIds'
 import { setNotes } from './notesStore'
 import {
   getListsServerSnapshot,
@@ -25,6 +26,7 @@ export interface ListsApi {
   addList: (name: string) => NoteList | null
   updateList: (id: string, patch: ListUpdate) => void
   deleteList: (id: string) => void
+  reorderLists: (orderedIds: ReadonlyArray<string>) => void
 }
 
 /**
@@ -81,13 +83,21 @@ export function useLists(): ListsApi {
     )
   }, [])
 
+  const reorderLists = useCallback((orderedIds: ReadonlyArray<string>): void => {
+    setLists(
+      (prev: ReadonlyArray<NoteList>): ReadonlyArray<NoteList> =>
+        reorderByIds(prev, orderedIds, (list: NoteList): string => list.id),
+    )
+  }, [])
+
   return useMemo<ListsApi>(
     (): ListsApi => ({
       lists,
       addList,
       updateList,
       deleteList,
+      reorderLists,
     }),
-    [lists, addList, updateList, deleteList],
+    [lists, addList, updateList, deleteList, reorderLists],
   )
 }

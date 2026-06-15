@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState, type JSX } from 'react'
+import { useEffect, useRef, useState, type DragEvent, type JSX } from 'react'
 import type { Note, NoteColor, NoteList, NoteView } from '../lib/types'
 import { getNoteColorClasses } from '../lib/colors'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { ListPicker } from './ListPicker'
-import { MarkdownBody } from './MarkdownBody'
+import { NoteContent } from './NoteContent'
 
 /**
  * Props for an individual `NoteCard` rendered inside the grid.
@@ -16,6 +16,8 @@ export interface NoteCardProps {
   note: Note
   view: NoteView
   lists: ReadonlyArray<NoteList>
+  listName?: string | null
+  draggable?: boolean
   onOpen: (note: Note) => void
   onTogglePinned: (id: string) => void
   onSetArchived: (id: string, archived: boolean) => void
@@ -24,6 +26,12 @@ export interface NoteCardProps {
   onChangeColor: (id: string, color: NoteColor) => void
   onSetListId: (id: string, listId: string | null) => void
   onCreateList?: (name: string) => NoteList | null
+  onContentChange?: (id: string, content: string) => void
+  onLabelClick?: (label: string) => void
+  onNoteLinkClick?: (title: string) => void
+  onDragStart?: (id: string) => void
+  onDragOver?: (id: string) => void
+  onDrop?: (id: string) => void
 }
 
 /**
@@ -35,6 +43,8 @@ export function NoteCard({
   note,
   view,
   lists,
+  listName = null,
+  draggable = false,
   onOpen,
   onTogglePinned,
   onSetArchived,
@@ -43,8 +53,15 @@ export function NoteCard({
   onChangeColor,
   onSetListId,
   onCreateList,
+  onContentChange,
+  onLabelClick,
+  onNoteLinkClick,
+  onDragStart,
+  onDragOver,
+  onDrop,
 }: NoteCardProps): JSX.Element {
   const [showPalette, setShowPalette] = useState<boolean>(false)
+  const [dragOver, setDragOver] = useState<boolean>(false)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const classes = getNoteColorClasses(note.color)
 
@@ -64,25 +81,70 @@ export function NoteCard({
 
   return (
     <article
-      className={`group relative rounded-xl border border-border ${classes.tint} ${stripClass} text-foreground transition-colors hover:border-foreground/25`}
+      draggable={draggable && !isTrash}
+      onDragStart={(event: DragEvent<HTMLElement>): void => {
+        if (!draggable || isTrash) return
+        event.dataTransfer.setData('text/note-id', note.id)
+        event.dataTransfer.effectAllowed = 'move'
+        onDragStart?.(note.id)
+      }}
+      onDragOver={(event: DragEvent<HTMLElement>): void => {
+        if (!draggable || isTrash) return
+        event.preventDefault()
+        event.dataTransfer.dropEffect = 'move'
+        setDragOver(true)
+        onDragOver?.(note.id)
+      }}
+      onDragLeave={(): void => setDragOver(false)}
+      onDrop={(event: DragEvent<HTMLElement>): void => {
+        if (!draggable || isTrash) return
+        event.preventDefault()
+        setDragOver(false)
+        onDrop?.(note.id)
+      }}
+      className={`group relative rounded-xl border border-border ${classes.tint} ${stripClass} text-foreground transition-colors hover:border-foreground/25 ${
+        dragOver ? 'ring-2 ring-accent' : ''
+      }`}
     >
-      <button
-        type='button'
+      {draggable && !isTrash ? (
+        <span
+          className='absolute left-1 top-2 cursor-grab text-muted opacity-0 transition-opacity group-hover:opacity-60'
+          aria-hidden='true'
+        >
+          <Icon name='gripVertical' size={16} />
+        </span>
+      ) : null}
+
+      <div
+        role={isTrash ? undefined : 'button'}
+        tabIndex={isTrash ? undefined : 0}
         onClick={(): void => {
           if (isTrash) return
           onOpen(note)
         }}
-        className='block w-full cursor-text text-left'
-        disabled={isTrash}
+        onKeyDown={(event): void => {
+          if (isTrash) return
+          if (event.key !== 'Enter' && event.key !== ' ') return
+          event.preventDefault()
+          onOpen(note)
+        }}
+        className={`block w-full text-left ${isTrash ? '' : 'cursor-text'}`}
       >
         <div className='flex items-start justify-between gap-2 px-4 pt-3.5'>
-          {note.title.length > 0 ? (
-            <h3 className='line-clamp-3 break-words text-[15px] font-semibold tracking-tight'>
-              {note.title}
-            </h3>
-          ) : (
-            <span className='sr-only'>Untitled note</span>
-          )}
+          <div className='min-w-0 flex-1'>
+            {listName ? (
+              <span className='mb-1 inline-block rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-medium text-muted'>
+                {listName}
+              </span>
+            ) : null}
+            {note.title.length > 0 ? (
+              <h3 className='line-clamp-3 break-words text-[15px] font-semibold tracking-tight'>
+                {note.title}
+              </h3>
+            ) : (
+              <span className='sr-only'>Untitled note</span>
+            )}
+          </div>
           {!isTrash ? (
             <span
               role='button'
@@ -113,25 +175,33 @@ export function NoteCard({
           <div className='flex flex-wrap gap-1 px-4 pt-2'>
             {note.labels.map(
               (label: string): JSX.Element => (
-                <span
+                <button
                   key={label}
-                  className='rounded-full bg-surface-hover px-2 py-0.5 text-[11px] font-medium text-muted'
+                  type='button'
+                  onClick={(event): void => {
+                    event.stopPropagation()
+                    onLabelClick?.(label)
+                  }}
+                  className='rounded-full bg-surface-hover px-2 py-0.5 text-[11px] font-medium text-muted transition-colors hover:text-foreground'
                 >
                   {label}
-                </span>
+                </button>
               ),
             )}
           </div>
         ) : null}
         {note.content.length > 0 ? (
-          <MarkdownBody
+          <NoteContent
             content={note.content}
             className='line-clamp-6 break-words px-4 pb-1 pt-2 text-sm text-muted'
+            interactive={!isTrash}
+            onContentChange={(next: string): void => onContentChange?.(note.id, next)}
+            onNoteLinkClick={onNoteLinkClick}
           />
         ) : (
           <div className='h-2' />
         )}
-      </button>
+      </div>
 
       <div
         className='flex items-center justify-between px-2 pb-2 pt-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100'

@@ -3,6 +3,7 @@
 import type { JSX } from 'react'
 import type { NoteList } from '../lib/types'
 import { Icon } from './Icon'
+import { InlineRename } from './InlineRename'
 
 /**
  * Props for the list detail breadcrumb header.
@@ -10,15 +11,17 @@ import { Icon } from './Icon'
 export interface ListDetailHeaderProps {
   list: NoteList
   onBack: () => void
+  onRename: (id: string, name: string) => void
 }
 
 /**
  * Header shown when viewing notes inside a single list, with a back control.
- *
- * @param props.list The list currently being viewed.
- * @param props.onBack Returns to the lists overview.
  */
-export function ListDetailHeader({ list, onBack }: ListDetailHeaderProps): JSX.Element {
+export function ListDetailHeader({
+  list,
+  onBack,
+  onRename,
+}: ListDetailHeaderProps): JSX.Element {
   return (
     <div className='mb-8 flex items-center gap-3'>
       <button
@@ -29,7 +32,12 @@ export function ListDetailHeader({ list, onBack }: ListDetailHeaderProps): JSX.E
         <Icon name='chevronLeft' size={18} />
         <span>Lists</span>
       </button>
-      <h2 className='text-lg font-semibold tracking-tight text-foreground'>{list.name}</h2>
+      <InlineRename
+        value={list.name}
+        onSave={(name: string): void => onRename(list.id, name)}
+        className='text-lg font-semibold tracking-tight text-foreground'
+        inputClassName='rounded bg-surface-hover px-2 py-1 text-lg font-semibold outline-none'
+      />
     </div>
   )
 }

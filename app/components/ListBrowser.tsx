@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent, type JSX } from 'react'
+import { useRef, useState, type FormEvent, type JSX } from 'react'
 import type { Note, NoteList } from '../lib/types'
 import { countListNotes } from '../lib/countListNotes'
 import { ListCard } from './ListCard'
@@ -14,16 +14,13 @@ export interface ListBrowserProps {
   onOpen: (list: NoteList) => void
   onCreate: (name: string) => void
   onDelete: (id: string) => void
+  onRename: (id: string, name: string) => void
+  onDropNote: (listId: string, noteId: string) => void
+  onReorderLists: (orderedIds: ReadonlyArray<string>) => void
 }
 
 /**
  * Overview of every named list with inline creation and per-list note counts.
- *
- * @param props.lists All saved lists.
- * @param props.notes Full notes collection used to compute counts.
- * @param props.onOpen Opens a list detail view.
- * @param props.onCreate Creates a new list from the inline form.
- * @param props.onDelete Deletes a list and returns its notes to the inbox.
  */
 export function ListBrowser({
   lists,
@@ -31,8 +28,12 @@ export function ListBrowser({
   onOpen,
   onCreate,
   onDelete,
+  onRename,
+  onDropNote,
+  onReorderLists,
 }: ListBrowserProps): JSX.Element {
   const [name, setName] = useState<string>('')
+  const dragListIdRef = useRef<string | null>(null)
 
   const submit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -40,6 +41,20 @@ export function ListBrowser({
     if (trimmed.length === 0) return
     onCreate(trimmed)
     setName('')
+  }
+
+  const handleReorder = (targetListId: string): void => {
+    const fromId: string | null = dragListIdRef.current
+    if (fromId === null || fromId === targetListId) return
+    const ids: string[] = lists.map((list: NoteList): string => list.id)
+    const fromIdx: number = ids.indexOf(fromId)
+    const toIdx: number = ids.indexOf(targetListId)
+    if (fromIdx < 0 || toIdx < 0) return
+    const next: string[] = [...ids]
+    next.splice(fromIdx, 1)
+    next.splice(toIdx, 0, fromId)
+    onReorderLists(next)
+    dragListIdRef.current = null
   }
 
   return (
@@ -72,8 +87,15 @@ export function ListBrowser({
                 key={list.id}
                 list={list}
                 noteCount={countListNotes(notes, list.id)}
+                draggable
                 onOpen={onOpen}
                 onDelete={onDelete}
+                onRename={onRename}
+                onDropNote={onDropNote}
+                onReorder={handleReorder}
+                onDragStartList={(listId: string): void => {
+                  dragListIdRef.current = listId
+                }}
               />
             ),
           )}

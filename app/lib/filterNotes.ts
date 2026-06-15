@@ -23,18 +23,20 @@ function matchesListFilter(note: Note, listFilter: ListFilter): boolean {
 
 /**
  * Filters the supplied notes down to those that belong to the given view and
- * match the (optional) full-text search query.
+ * match the (optional) full-text search query and label filter.
  *
  * @param notes The full notes collection.
  * @param view Active high-level filter (notes/archive/trash/lists).
  * @param query Optional case-insensitive substring query.
  * @param listFilter Optional list scope; defaults to `all`.
+ * @param labelFilter Optional exact label to match; null shows all.
  */
 export function filterNotes(
   notes: ReadonlyArray<Note>,
   view: NoteView,
   query: string,
   listFilter: ListFilter = 'all',
+  labelFilter: string | null = null,
 ): ReadonlyArray<Note> {
   const normalized: string = normalizeQuery(query)
 
@@ -46,6 +48,13 @@ export function filterNotes(
     } else {
       if (note.trashed || note.archived) return false
       if (!matchesListFilter(note, listFilter)) return false
+    }
+
+    if (labelFilter !== null) {
+      const hasLabel: boolean = note.labels.some(
+        (label: string): boolean => label.toLowerCase() === labelFilter.toLowerCase(),
+      )
+      if (!hasLabel) return false
     }
 
     if (normalized.length === 0) return true

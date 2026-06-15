@@ -1,4 +1,5 @@
 import type { Note } from './types'
+import { purgeExpiredTrash } from './purgeExpiredTrash'
 
 /**
  * `localStorage` key under which the entire notes collection is serialized as
@@ -8,7 +9,7 @@ export const STORAGE_KEY: string = 'keepspark:notes:v1'
 
 /**
  * Ensures a parsed note entry has the expected shape, migrating older records
- * that predate the `labels` field.
+ * that predate newer fields.
  *
  * @param entry Raw parsed object from storage.
  */
@@ -28,6 +29,14 @@ function coerceNote(entry: unknown): Note | null {
     ? candidate.labels.filter((label: unknown): label is string => typeof label === 'string')
     : []
 
+  const trashed: boolean = candidate.trashed ?? false
+  const trashedAt: number | null =
+    typeof candidate.trashedAt === 'number'
+      ? candidate.trashedAt
+      : trashed
+        ? (candidate.updatedAt ?? Date.now())
+        : null
+
   return {
     id: candidate.id,
     title: candidate.title,
@@ -37,7 +46,8 @@ function coerceNote(entry: unknown): Note | null {
     listId: typeof candidate.listId === 'string' ? candidate.listId : null,
     pinned: candidate.pinned ?? false,
     archived: candidate.archived ?? false,
-    trashed: candidate.trashed ?? false,
+    trashed,
+    trashedAt,
     createdAt: candidate.createdAt ?? Date.now(),
     updatedAt: candidate.updatedAt ?? Date.now(),
   }
@@ -57,9 +67,11 @@ export function loadNotes(): ReadonlyArray<Note> {
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
 
-    return parsed
+    const notes: ReadonlyArray<Note> = parsed
       .map((entry: unknown): Note | null => coerceNote(entry))
       .filter((note: Note | null): note is Note => note !== null)
+
+    return purgeExpiredTrash(notes)
   } catch {
     return []
   }

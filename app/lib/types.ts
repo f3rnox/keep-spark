@@ -31,6 +31,11 @@ export type NoteLayout = 'grid' | 'stacked'
 export type ListFilter = 'inbox' | 'all' | string
 
 /**
+ * Sort order applied to visible notes.
+ */
+export type NoteSort = 'updated' | 'created' | 'title' | 'color' | 'custom'
+
+/**
  * A user-defined named list used to group notes.
  */
 export interface NoteList {
@@ -53,6 +58,7 @@ export interface Note {
   pinned: boolean
   archived: boolean
   trashed: boolean
+  trashedAt: number | null
   createdAt: number
   updatedAt: number
 }

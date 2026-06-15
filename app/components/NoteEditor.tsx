@@ -1,22 +1,35 @@
 'use client'
 
 import {
+  forwardRef,
   useCallback,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
   type ChangeEvent,
+  type ClipboardEvent,
+  type DragEvent,
   type JSX,
   type KeyboardEvent,
 } from 'react'
 import type { NoteColor } from '../lib/types'
 import { getNoteColorClasses } from '../lib/colors'
+import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
+import { insertImageMarkdown } from '../lib/insertImageMarkdown'
+import { readImageDataUrls } from '../lib/readImageDataUrls'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { LabelEditor } from './LabelEditor'
 import { MarkdownToolbar } from './MarkdownToolbar'
-import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
+
+/**
+ * Handle exposed to parent components for controlling the inline editor.
+ */
+export interface NoteEditorHandle {
+  expand: () => void
+}
 
 /**
  * Props for the inline `NoteEditor` placed at the top of the notes view.
@@ -36,11 +49,11 @@ export interface NoteEditorProps {
  * Compact-to-expanded inline editor that mirrors Google Keep's "Take a
  * note..." widget. Collapses back to its prompt state after submitting or
  * when the user clicks outside.
- *
- * @param props.onCreate Invoked with the trimmed title/content/color/labels when
- *                       the user finishes composing a note.
  */
-export function NoteEditor({ listId = null, onCreate }: NoteEditorProps): JSX.Element {
+export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function NoteEditor(
+  { listId = null, onCreate },
+  ref,
+): JSX.Element {
   const [expanded, setExpanded] = useState<boolean>(false)
   const [title, setTitle] = useState<string>('')
   const [content, setContent] = useState<string>('')
@@ -68,6 +81,14 @@ export function NoteEditor({ listId = null, onCreate }: NoteEditorProps): JSX.El
     reset()
   }, [title, content, color, labels, listId, onCreate, reset])
 
+  useImperativeHandle(
+    ref,
+    (): NoteEditorHandle => ({
+      expand: (): void => setExpanded(true),
+    }),
+    [],
+  )
+
   useEffect((): (() => void) | void => {
     if (!expanded) return
     const handler = (event: MouseEvent): void => {
@@ -90,6 +111,25 @@ export function NoteEditor({ listId = null, onCreate }: NoteEditorProps): JSX.El
       event.preventDefault()
       reset()
     }
+  }
+
+  const handleImageInsert = async (
+    event: ClipboardEvent<HTMLTextAreaElement> | DragEvent<HTMLTextAreaElement>,
+  ): Promise<void> => {
+    event.preventDefault()
+    const urls: ReadonlyArray<string> = await readImageDataUrls(event.nativeEvent)
+    if (urls.length === 0) return
+
+    const textarea: HTMLTextAreaElement | null = contentRef.current
+    const start: number = textarea?.selectionStart ?? content.length
+    const end: number = textarea?.selectionEnd ?? content.length
+    let next: string = content
+
+    for (const url of urls) {
+      next = insertImageMarkdown(next, url, start, end)
+    }
+
+    setContent(next)
   }
 
   const classes = getNoteColorClasses(color)
@@ -127,6 +167,8 @@ export function NoteEditor({ listId = null, onCreate }: NoteEditorProps): JSX.El
               onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
                 handleMarkdownKeyDown(event, content, setContent)
               }}
+              onPaste={handleImageInsert}
+              onDrop={handleImageInsert}
               placeholder='Write something...'
               rows={3}
               className='w-full resize-none bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted'
@@ -171,4 +213,4 @@ export function NoteEditor({ listId = null, onCreate }: NoteEditorProps): JSX.El
       </div>
     </div>
   )
-}
+})

@@ -1,6 +1,6 @@
 'use client'
 
-import type { ChangeEvent, JSX } from 'react'
+import { forwardRef, type ChangeEvent, type JSX } from 'react'
 import { Icon } from './Icon'
 import { ThemeToggle } from './ThemeToggle'
 
@@ -15,11 +15,11 @@ export interface HeaderProps {
 /**
  * Sticky application header holding the minimalist wordmark, a centered search
  * field, and the light/dark theme toggle.
- *
- * @param props.query Current search query value.
- * @param props.onQueryChange Invoked whenever the search input changes.
  */
-export function Header({ query, onQueryChange }: HeaderProps): JSX.Element {
+export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
+  { query, onQueryChange },
+  ref,
+): JSX.Element {
   return (
     <header className='sticky top-0 z-30 border-b border-border bg-canvas/80 backdrop-blur'>
       <div className='mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6'>
@@ -33,6 +33,7 @@ export function Header({ query, onQueryChange }: HeaderProps): JSX.Element {
         <label className='ml-auto flex h-10 w-full max-w-md items-center gap-2.5 rounded-xl border border-transparent bg-surface-hover px-3 text-muted transition focus-within:border-border focus-within:bg-surface'>
           <Icon name='search' size={18} />
           <input
+            ref={ref}
             type='search'
             value={query}
             onChange={(event: ChangeEvent<HTMLInputElement>): void =>
@@ -47,4 +48,4 @@ export function Header({ query, onQueryChange }: HeaderProps): JSX.Element {
       </div>
     </header>
   )
-}
+})
