@@ -10,6 +10,22 @@ export type ShortcutId =
   | 'toggle-pin'
   | 'undo'
   | 'redo'
+  | 'search-commit'
+  | 'search-dismiss'
+  | 'open-note-enter'
+  | 'open-note-space'
+  | 'format-bold'
+  | 'format-italic'
+  | 'format-h1'
+  | 'format-h2'
+  | 'format-h3'
+  | 'cancel-compose'
+  | 'label-add'
+  | 'label-remove-last'
+  | 'rename-confirm'
+  | 'rename-cancel'
+  | 'list-create'
+  | 'dialog-cancel'
 
 /**
  * One keyboard shortcut entry for the settings reference page.
@@ -19,18 +35,126 @@ export interface KeyboardShortcut {
   keys: ReadonlyArray<string>
   description: string
   context?: string
+  customizable?: boolean
 }
 
 /**
  * App-wide default keyboard shortcuts.
  */
 export const DEFAULT_KEYBOARD_SHORTCUTS: ReadonlyArray<KeyboardShortcut> = [
-  { id: 'new-note', keys: ['N'], description: 'Create a new note' },
-  { id: 'focus-search', keys: ['/'], description: 'Focus the search field' },
-  { id: 'close-modal-exit-selection', keys: ['Esc'], description: 'Close the note editor or exit selection mode' },
-  { id: 'toggle-pin', keys: ['P'], description: 'Toggle pin on the open note', context: 'Note editor' },
-  { id: 'undo', keys: ['Ctrl', 'Z'], description: 'Undo the last change' },
-  { id: 'redo', keys: ['Ctrl', 'Shift', 'Z'], description: 'Redo the last undone change' },
+  { id: 'new-note', keys: ['N'], description: 'Create a new note', customizable: true },
+  { id: 'focus-search', keys: ['/'], description: 'Focus the search field', customizable: true },
+  { id: 'undo', keys: ['Ctrl', 'Z'], description: 'Undo the last change', customizable: true },
+  { id: 'redo', keys: ['Ctrl', 'Shift', 'Z'], description: 'Redo the last undone change', customizable: true },
+  {
+    id: 'close-modal-exit-selection',
+    keys: ['Esc'],
+    description: 'Close the note editor or exit selection mode',
+    customizable: true,
+  },
+  {
+    id: 'toggle-pin',
+    keys: ['P'],
+    description: 'Toggle pin on the open note',
+    context: 'Note editor',
+    customizable: true,
+  },
+  {
+    id: 'search-commit',
+    keys: ['Enter'],
+    description: 'Run search',
+    context: 'Search field',
+  },
+  {
+    id: 'search-dismiss',
+    keys: ['Esc'],
+    description: 'Close search suggestions',
+    context: 'Search field',
+  },
+  {
+    id: 'open-note-enter',
+    keys: ['Enter'],
+    description: 'Open note',
+    context: 'Note list',
+  },
+  {
+    id: 'open-note-space',
+    keys: ['Space'],
+    description: 'Open note',
+    context: 'Note list',
+  },
+  {
+    id: 'format-bold',
+    keys: ['Ctrl', 'B'],
+    description: 'Apply bold formatting',
+    context: 'Note content',
+  },
+  {
+    id: 'format-italic',
+    keys: ['Ctrl', 'I'],
+    description: 'Apply italic formatting',
+    context: 'Note content',
+  },
+  {
+    id: 'format-h1',
+    keys: ['Ctrl', 'Alt', '1'],
+    description: 'Apply heading 1',
+    context: 'Note content. Ctrl+Shift+1 also works.',
+  },
+  {
+    id: 'format-h2',
+    keys: ['Ctrl', 'Alt', '2'],
+    description: 'Apply heading 2',
+    context: 'Note content. Ctrl+Shift+2 also works.',
+  },
+  {
+    id: 'format-h3',
+    keys: ['Ctrl', 'Alt', '3'],
+    description: 'Apply heading 3',
+    context: 'Note content. Ctrl+Shift+3 also works.',
+  },
+  {
+    id: 'cancel-compose',
+    keys: ['Esc'],
+    description: 'Discard unsaved new note',
+    context: 'New note panel',
+  },
+  {
+    id: 'label-add',
+    keys: ['Enter'],
+    description: 'Add label',
+    context: 'Label input',
+  },
+  {
+    id: 'label-remove-last',
+    keys: ['Backspace'],
+    description: 'Remove last label',
+    context: 'Label input when empty',
+  },
+  {
+    id: 'rename-confirm',
+    keys: ['Enter'],
+    description: 'Save rename',
+    context: 'Inline rename',
+  },
+  {
+    id: 'rename-cancel',
+    keys: ['Esc'],
+    description: 'Cancel rename',
+    context: 'Inline rename',
+  },
+  {
+    id: 'list-create',
+    keys: ['Enter'],
+    description: 'Create list from typed name',
+    context: 'List picker',
+  },
+  {
+    id: 'dialog-cancel',
+    keys: ['Esc'],
+    description: 'Cancel or close',
+    context: 'Confirm and password dialogs',
+  },
 ]
 
 const STORAGE_KEY = 'keepspark:shortcuts:v1'
@@ -49,6 +173,7 @@ function ensureHydrated(): void {
       const parsed = JSON.parse(raw) as Record<string, string[]>
       if (parsed && typeof parsed === 'object') {
         snapshot = DEFAULT_KEYBOARD_SHORTCUTS.map((shortcut) => {
+          if (shortcut.customizable === false) return shortcut
           if (parsed[shortcut.id] && Array.isArray(parsed[shortcut.id])) {
             return {
               ...shortcut,
@@ -86,6 +211,9 @@ export function setShortcutKeys(id: ShortcutId, keys: ReadonlyArray<string>): vo
   if (globalThis.window === undefined) return
   ensureHydrated()
 
+  const existing = snapshot.find((shortcut) => shortcut.id === id)
+  if (existing?.customizable === false) return
+
   // Update snapshot
   snapshot = snapshot.map((shortcut) => {
     if (shortcut.id === id) {
@@ -98,7 +226,9 @@ export function setShortcutKeys(id: ShortcutId, keys: ReadonlyArray<string>): vo
   try {
     const customMap: Record<string, ReadonlyArray<string>> = {}
     snapshot.forEach((s) => {
-      customMap[s.id] = s.keys
+      if (s.customizable !== false) {
+        customMap[s.id] = s.keys
+      }
     })
     globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(customMap))
   } catch {

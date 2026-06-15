@@ -13,7 +13,7 @@ export function ShortcutsSettingsPanel(): JSX.Element {
     <div className='space-y-8'>
       <SettingsSection
         title='Shortcuts'
-        description='Available when focus is not inside a text field, unless noted otherwise. Click any shortcut to configure it.'
+        description='Global shortcuts can be customized by clicking them. Context shortcuts apply in specific fields and dialogs.'
       >
         <div className='flex justify-end px-4 py-2 border-b border-border bg-canvas/30'>
           <button

@@ -42,12 +42,13 @@ export function KeyboardShortcutsList(): JSX.Element {
   const [recordingId, setRecordingId] = useState<ShortcutId | null>(null)
   const [pressedModifiers, setPressedModifiers] = useState<string[]>([])
 
-  const handleRowClick = useCallback((shortcutId: ShortcutId) => {
-    if (recordingId === shortcutId) {
+  const handleRowClick = useCallback((shortcut: KeyboardShortcut) => {
+    if (shortcut.customizable === false) return
+    if (recordingId === shortcut.id) {
       setRecordingId(null)
       setPressedModifiers([])
     } else {
-      setRecordingId(shortcutId)
+      setRecordingId(shortcut.id)
       setPressedModifiers([])
     }
   }, [recordingId])
@@ -111,78 +112,96 @@ export function KeyboardShortcutsList(): JSX.Element {
     <ul className='divide-y divide-border'>
       {shortcuts.map((shortcut: KeyboardShortcut): JSX.Element => {
         const isRecording = recordingId === shortcut.id
-
-        return (
-          <li key={shortcut.id} data-shortcut-row={shortcut.id}>
-            <button
-              type='button'
-              onClick={(): void => handleRowClick(shortcut.id)}
-              className={`group w-full text-left flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between cursor-pointer transition-colors select-none focus:outline-none focus:bg-surface-hover/30 ${
+        const isCustomizable = shortcut.customizable !== false
+        const rowClassName = `group w-full text-left flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between transition-colors select-none ${
+          isCustomizable
+            ? `cursor-pointer focus:outline-none focus:bg-surface-hover/30 ${
                 isRecording
                   ? 'bg-primary/5 hover:bg-primary/10'
                   : 'hover:bg-surface-hover/50'
-              }`}
-            >
-              <div className='space-y-0.5'>
-                <div className='flex items-center gap-2'>
-                  <p className='text-sm font-medium text-foreground'>{shortcut.description}</p>
-                  {!isRecording && (
-                    <Icon
-                      name='edit'
-                      size={14}
-                      className='text-muted opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity'
-                    />
-                  )}
-                </div>
-                {shortcut.context ? (
-                  <p className='text-xs text-muted'>{shortcut.context}</p>
+              }`
+            : ''
+        }`
+
+        const rowContent = (
+          <>
+            <div className='space-y-0.5'>
+              <div className='flex items-center gap-2'>
+                <p className='text-sm font-medium text-foreground'>{shortcut.description}</p>
+                {isCustomizable && !isRecording ? (
+                  <Icon
+                    name='edit'
+                    size={14}
+                    className='text-muted opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity'
+                  />
                 ) : null}
               </div>
+              {shortcut.context ? (
+                <p className='text-xs text-muted'>{shortcut.context}</p>
+              ) : null}
+            </div>
 
-              <div className='flex flex-wrap gap-1.5 items-center'>
-                {isRecording ? (
-                  <>
-                    <span className='animate-pulse text-xs text-primary font-medium mr-1'>
-                      Recording...
-                    </span>
-                    {pressedModifiers.length > 0 ? (
-                      <>
-                        {pressedModifiers.map((mod) => (
-                          <kbd
-                            key={mod}
-                            className='rounded-md border border-primary/40 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary shadow-sm'
-                          >
-                            {mod}
-                          </kbd>
-                        ))}
-                        <span className='text-xs text-primary/60 font-bold'>+</span>
-                        <span className='text-xs text-primary/70 italic animate-pulse bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10'>
-                          press key
-                        </span>
-                      </>
-                    ) : (
-                      <span className='text-xs text-muted italic bg-muted/10 px-2 py-1 rounded border border-border/40 animate-pulse'>
-                        Press key combination
+            <div className='flex flex-wrap gap-1.5 items-center'>
+              {isRecording ? (
+                <>
+                  <span className='animate-pulse text-xs text-primary font-medium mr-1'>
+                    Recording...
+                  </span>
+                  {pressedModifiers.length > 0 ? (
+                    <>
+                      {pressedModifiers.map((mod) => (
+                        <kbd
+                          key={mod}
+                          className='rounded-md border border-primary/40 bg-primary/10 px-2 py-1 text-xs font-semibold text-primary shadow-sm'
+                        >
+                          {mod}
+                        </kbd>
+                      ))}
+                      <span className='text-xs text-primary/60 font-bold'>+</span>
+                      <span className='text-xs text-primary/70 italic animate-pulse bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10'>
+                        press key
                       </span>
-                    )}
-                  </>
-                ) : (
-                  <>
+                    </>
+                  ) : (
+                    <span className='text-xs text-muted italic bg-muted/10 px-2 py-1 rounded border border-border/40 animate-pulse'>
+                      Press key combination
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {isCustomizable ? (
                     <span className='text-xs text-muted/60 opacity-0 group-hover:opacity-100 transition-opacity mr-1.5 hidden sm:inline'>
                       Click to customize
                     </span>
-                    {shortcut.keys.map((key: string): JSX.Element => (
-                      <kbd
-                        key={`${shortcut.id}-${key}`}
-                        className='rounded-md border border-border bg-canvas px-2 py-1 text-xs font-medium text-foreground shadow-sm group-hover:border-border/80 group-hover:bg-canvas/80'
-                      >
-                        {key}
-                      </kbd>
-                    ))}
-                  </>
-                )}
-              </div>
-            </button>
+                  ) : null}
+                  {shortcut.keys.map((key: string): JSX.Element => (
+                    <kbd
+                      key={`${shortcut.id}-${key}`}
+                      className='rounded-md border border-border bg-canvas px-2 py-1 text-xs font-medium text-foreground shadow-sm group-hover:border-border/80 group-hover:bg-canvas/80'
+                    >
+                      {key}
+                    </kbd>
+                  ))}
+                </>
+              )}
+            </div>
+          </>
+        )
+
+        return (
+          <li key={shortcut.id} data-shortcut-row={shortcut.id}>
+            {isCustomizable ? (
+              <button
+                type='button'
+                onClick={(): void => handleRowClick(shortcut)}
+                className={rowClassName}
+              >
+                {rowContent}
+              </button>
+            ) : (
+              <div className={rowClassName}>{rowContent}</div>
+            )}
           </li>
         )
       })}
