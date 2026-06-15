@@ -22,6 +22,8 @@ export type IconName =
   | 'deleteForever'
   | 'sun'
   | 'moon'
+  | 'grid'
+  | 'stacked'
 
 const PATHS: Record<IconName, JSX.Element> = {
   menu: (
@@ -149,6 +151,21 @@ const PATHS: Record<IconName, JSX.Element> = {
       d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z'
       strokeLinejoin='round'
     />
+  ),
+  grid: (
+    <>
+      <rect x='4' y='4' width='7' height='7' rx='1.5' />
+      <rect x='13' y='4' width='7' height='7' rx='1.5' />
+      <rect x='4' y='13' width='7' height='7' rx='1.5' />
+      <rect x='13' y='13' width='7' height='7' rx='1.5' />
+    </>
+  ),
+  stacked: (
+    <>
+      <path d='M4 7h16' strokeLinecap='round' />
+      <path d='M4 12h16' strokeLinecap='round' />
+      <path d='M4 17h16' strokeLinecap='round' />
+    </>
   ),
 }
 

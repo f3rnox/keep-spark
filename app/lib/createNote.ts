@@ -19,6 +19,7 @@ export function createNote(title: string, content: string): Note {
     id,
     title,
     content,
+    labels: [],
     color: 'default',
     pinned: false,
     archived: false,

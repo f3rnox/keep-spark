@@ -8,12 +8,14 @@ import { useNotes } from '../lib/useNotes'
 import { EditNoteModal } from './EditNoteModal'
 import { EmptyState } from './EmptyState'
 import { Header } from './Header'
+import { LayoutSelector } from './LayoutSelector'
 import { NavTabs } from './NavTabs'
 import { NoteCard } from './NoteCard'
 import { NoteEditor } from './NoteEditor'
-import { NoteGrid } from './NoteGrid'
+import { NoteList } from './NoteList'
 import { NoteSection } from './NoteSection'
 import { TrashBanner } from './TrashBanner'
+import { useNoteLayout } from '../lib/useNoteLayout'
 
 /**
  * Top-level Google Keep clone shell. Owns view selection, sidebar collapse
@@ -35,6 +37,7 @@ export function KeepApp(): JSX.Element {
   const [view, setView] = useState<NoteView>('notes')
   const [query, setQuery] = useState<string>('')
   const [editing, setEditing] = useState<Note | null>(null)
+  const { layout, setLayout } = useNoteLayout()
 
   const counts = useMemo<Record<NoteView, number>>(
     (): Record<NoteView, number> => ({
@@ -82,8 +85,9 @@ export function KeepApp(): JSX.Element {
       <Header query={query} onQueryChange={setQuery} />
 
       <div className='sticky top-16 z-20 border-b border-border bg-canvas/80 backdrop-blur'>
-        <div className='mx-auto w-full max-w-6xl px-4 sm:px-6'>
+        <div className='mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6'>
           <NavTabs view={view} counts={counts} onSelect={setView} />
+          <LayoutSelector layout={layout} onChange={setLayout} />
         </div>
       </div>
 
@@ -91,8 +95,13 @@ export function KeepApp(): JSX.Element {
         {showEditor ? (
           <div className='mb-12'>
             <NoteEditor
-              onCreate={(title: string, content: string, color: NoteColor): void => {
-                addNote(title, content, color)
+              onCreate={(
+                title: string,
+                content: string,
+                color: NoteColor,
+                labels: ReadonlyArray<string>,
+              ): void => {
+                addNote(title, content, color, labels)
               }}
             />
           </div>
@@ -107,15 +116,15 @@ export function KeepApp(): JSX.Element {
         ) : view === 'notes' && pinned.length > 0 && others.length > 0 ? (
           <>
             <NoteSection label='Pinned'>
-              <NoteGrid>{pinned.map(renderCard)}</NoteGrid>
+              <NoteList layout={layout}>{pinned.map(renderCard)}</NoteList>
             </NoteSection>
             <NoteSection label='Others'>
-              <NoteGrid>{others.map(renderCard)}</NoteGrid>
+              <NoteList layout={layout}>{others.map(renderCard)}</NoteList>
             </NoteSection>
           </>
         ) : (
           <NoteSection>
-            <NoteGrid>{visibleNotes.map(renderCard)}</NoteGrid>
+            <NoteList layout={layout}>{visibleNotes.map(renderCard)}</NoteList>
           </NoteSection>
         )}
       </main>
@@ -123,9 +132,15 @@ export function KeepApp(): JSX.Element {
       {editingNote ? (
         <EditNoteModal
           note={editingNote}
-          onSave={(id: string, patch: { title: string; content: string; color: NoteColor }): void =>
-            updateNote(id, patch)
-          }
+          onSave={(
+            id: string,
+            patch: {
+              title: string
+              content: string
+              color: NoteColor
+              labels: ReadonlyArray<string>
+            },
+          ): void => updateNote(id, patch)}
           onTogglePinned={togglePinned}
           onSetArchived={setArchived}
           onSetTrashed={setTrashed}

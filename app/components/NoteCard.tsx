@@ -6,6 +6,7 @@ import { getNoteColorClasses } from '../lib/colors'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
+import { MarkdownBody } from './MarkdownBody'
 
 /**
  * Props for an individual `NoteCard` rendered inside the grid.
@@ -56,7 +57,7 @@ export function NoteCard({
 
   return (
     <article
-      className={`group relative mb-4 break-inside-avoid rounded-xl border border-border ${classes.tint} ${stripClass} text-foreground transition-colors hover:border-foreground/25`}
+      className={`group relative rounded-xl border border-border ${classes.tint} ${stripClass} text-foreground transition-colors hover:border-foreground/25`}
     >
       <button
         type='button'
@@ -101,10 +102,25 @@ export function NoteCard({
             </span>
           ) : null}
         </div>
+        {note.labels.length > 0 ? (
+          <div className='flex flex-wrap gap-1 px-4 pt-2'>
+            {note.labels.map(
+              (label: string): JSX.Element => (
+                <span
+                  key={label}
+                  className='rounded-full bg-surface-hover px-2 py-0.5 text-[11px] font-medium text-muted'
+                >
+                  {label}
+                </span>
+              ),
+            )}
+          </div>
+        ) : null}
         {note.content.length > 0 ? (
-          <p className='whitespace-pre-wrap break-words px-4 pb-1 pt-2 text-sm leading-relaxed text-muted'>
-            {note.content}
-          </p>
+          <MarkdownBody
+            content={note.content}
+            className='line-clamp-6 break-words px-4 pb-1 pt-2 text-sm text-muted'
+          />
         ) : (
           <div className='h-2' />
         )}

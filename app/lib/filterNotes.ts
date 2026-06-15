@@ -37,7 +37,10 @@ export function filterNotes(
 
     return (
       note.title.toLowerCase().includes(normalized) ||
-      note.content.toLowerCase().includes(normalized)
+      note.content.toLowerCase().includes(normalized) ||
+      note.labels.some((label: string): boolean =>
+        label.toLowerCase().includes(normalized),
+      )
     )
   })
 }

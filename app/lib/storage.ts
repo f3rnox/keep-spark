@@ -7,6 +7,42 @@ import type { Note } from './types'
 export const STORAGE_KEY: string = 'keep-web:notes:v1'
 
 /**
+ * Ensures a parsed note entry has the expected shape, migrating older records
+ * that predate the `labels` field.
+ *
+ * @param entry Raw parsed object from storage.
+ */
+function coerceNote(entry: unknown): Note | null {
+  if (typeof entry !== 'object' || entry === null) return null
+
+  const candidate = entry as Partial<Note>
+  if (
+    typeof candidate.id !== 'string' ||
+    typeof candidate.title !== 'string' ||
+    typeof candidate.content !== 'string'
+  ) {
+    return null
+  }
+
+  const labels: ReadonlyArray<string> = Array.isArray(candidate.labels)
+    ? candidate.labels.filter((label: unknown): label is string => typeof label === 'string')
+    : []
+
+  return {
+    id: candidate.id,
+    title: candidate.title,
+    content: candidate.content,
+    labels,
+    color: candidate.color ?? 'default',
+    pinned: candidate.pinned ?? false,
+    archived: candidate.archived ?? false,
+    trashed: candidate.trashed ?? false,
+    createdAt: candidate.createdAt ?? Date.now(),
+    updatedAt: candidate.updatedAt ?? Date.now(),
+  }
+}
+
+/**
  * Loads the persisted notes collection from `localStorage`. Always returns an
  * array, even when storage is empty, missing, or contains malformed JSON.
  */
@@ -20,14 +56,9 @@ export function loadNotes(): ReadonlyArray<Note> {
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
 
-    return parsed.filter(
-      (entry: unknown): entry is Note =>
-        typeof entry === 'object' &&
-        entry !== null &&
-        typeof (entry as Note).id === 'string' &&
-        typeof (entry as Note).title === 'string' &&
-        typeof (entry as Note).content === 'string',
-    )
+    return parsed
+      .map((entry: unknown): Note | null => coerceNote(entry))
+      .filter((note: Note | null): note is Note => note !== null)
   } catch {
     return []
   }

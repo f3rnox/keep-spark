@@ -14,12 +14,20 @@ import { getNoteColorClasses } from '../lib/colors'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
+import { LabelEditor } from './LabelEditor'
+import { MarkdownToolbar } from './MarkdownToolbar'
+import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
 
 /**
  * Props for the inline `NoteEditor` placed at the top of the notes view.
  */
 export interface NoteEditorProps {
-  onCreate: (title: string, content: string, color: NoteColor) => void
+  onCreate: (
+    title: string,
+    content: string,
+    color: NoteColor,
+    labels: ReadonlyArray<string>,
+  ) => void
 }
 
 /**
@@ -27,13 +35,14 @@ export interface NoteEditorProps {
  * note..." widget. Collapses back to its prompt state after submitting or
  * when the user clicks outside.
  *
- * @param props.onCreate Invoked with the trimmed title/content/color when
+ * @param props.onCreate Invoked with the trimmed title/content/color/labels when
  *                       the user finishes composing a note.
  */
 export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
   const [expanded, setExpanded] = useState<boolean>(false)
   const [title, setTitle] = useState<string>('')
   const [content, setContent] = useState<string>('')
+  const [labels, setLabels] = useState<ReadonlyArray<string>>([])
   const [color, setColor] = useState<NoteColor>('default')
   const [showPalette, setShowPalette] = useState<boolean>(false)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
@@ -42,6 +51,7 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
   const reset = useCallback((): void => {
     setTitle('')
     setContent('')
+    setLabels([])
     setColor('default')
     setExpanded(false)
     setShowPalette(false)
@@ -52,9 +62,9 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
       reset()
       return
     }
-    onCreate(title, content, color)
+    onCreate(title, content, color, labels)
     reset()
-  }, [title, content, color, onCreate, reset])
+  }, [title, content, color, labels, onCreate, reset])
 
   useEffect((): (() => void) | void => {
     if (!expanded) return
@@ -101,16 +111,25 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
               placeholder='Title'
               className='w-full bg-transparent text-[15px] font-semibold tracking-tight text-foreground outline-none placeholder:font-normal placeholder:text-muted'
             />
+            <MarkdownToolbar
+              textareaRef={contentRef}
+              value={content}
+              onChange={setContent}
+            />
             <textarea
               ref={contentRef}
               value={content}
               onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
                 setContent(event.target.value)
               }
+              onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
+                handleMarkdownKeyDown(event, content, setContent)
+              }}
               placeholder='Write something...'
               rows={3}
               className='w-full resize-none bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted'
             />
+            <LabelEditor labels={labels} onChange={setLabels} />
             <div className='relative mt-1 flex items-center justify-between'>
               <div className='flex items-center'>
                 <IconButton

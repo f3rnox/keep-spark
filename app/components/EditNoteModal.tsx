@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   type ChangeEvent,
   type JSX,
@@ -14,13 +15,24 @@ import { getNoteColorClasses } from '../lib/colors'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
+import { LabelEditor } from './LabelEditor'
+import { MarkdownToolbar } from './MarkdownToolbar'
+import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
 
 /**
  * Props for the `EditNoteModal` overlay.
  */
 export interface EditNoteModalProps {
   note: Note
-  onSave: (id: string, patch: { title: string; content: string; color: NoteColor }) => void
+  onSave: (
+    id: string,
+    patch: {
+      title: string
+      content: string
+      color: NoteColor
+      labels: ReadonlyArray<string>
+    },
+  ) => void
   onTogglePinned: (id: string) => void
   onSetArchived: (id: string, archived: boolean) => void
   onSetTrashed: (id: string, trashed: boolean) => void
@@ -33,7 +45,7 @@ export interface EditNoteModalProps {
  * user closes the modal.
  *
  * @param props.note The note being edited (used to seed the form state).
- * @param props.onSave Persists the latest title/content/color.
+ * @param props.onSave Persists the latest title/content/color/labels.
  * @param props.onTogglePinned Pin/unpin the note.
  * @param props.onSetArchived Archive/unarchive the note.
  * @param props.onSetTrashed Move the note to trash.
@@ -49,13 +61,15 @@ export function EditNoteModal({
 }: EditNoteModalProps): JSX.Element {
   const [title, setTitle] = useState<string>(note.title)
   const [content, setContent] = useState<string>(note.content)
+  const [labels, setLabels] = useState<ReadonlyArray<string>>(note.labels)
   const [color, setColor] = useState<NoteColor>(note.color)
   const [showPalette, setShowPalette] = useState<boolean>(false)
+  const contentRef = useRef<HTMLTextAreaElement | null>(null)
 
   const close = useCallback((): void => {
-    onSave(note.id, { title, content, color })
+    onSave(note.id, { title, content, color, labels })
     onClose()
-  }, [note.id, title, content, color, onSave, onClose])
+  }, [note.id, title, content, color, labels, onSave, onClose])
 
   useEffect((): (() => void) => {
     const handler = (event: globalThis.KeyboardEvent): void => {
@@ -116,15 +130,31 @@ export function EditNoteModal({
           </span>
         </div>
 
+        <div className='px-5 pt-2'>
+          <MarkdownToolbar
+            textareaRef={contentRef}
+            value={content}
+            onChange={setContent}
+          />
+        </div>
+
         <textarea
+          ref={contentRef}
           value={content}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
             setContent(event.target.value)
           }
+          onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
+            handleMarkdownKeyDown(event, content, setContent)
+          }}
           placeholder='Write something...'
           rows={8}
           className='w-full resize-none bg-transparent px-5 py-3 text-[15px] leading-relaxed outline-none placeholder:text-muted'
         />
+
+        <div className='px-5 pb-2'>
+          <LabelEditor labels={labels} onChange={setLabels} />
+        </div>
 
         <div className='relative flex items-center justify-between px-3 pb-3 pt-1'>
           <div className='flex items-center gap-1'>

@@ -22,7 +22,12 @@ export type NoteUpdate = Partial<Omit<Note, "id" | "createdAt" | "updatedAt">>;
  */
 export interface NotesApi {
   notes: ReadonlyArray<Note>;
-  addNote: (title: string, content: string, color?: NoteColor) => Note | null;
+  addNote: (
+    title: string,
+    content: string,
+    color?: NoteColor,
+    labels?: ReadonlyArray<string>,
+  ) => Note | null;
   updateNote: (id: string, patch: NoteUpdate) => void;
   togglePinned: (id: string) => void;
   setArchived: (id: string, archived: boolean) => void;
@@ -47,12 +52,17 @@ export function useNotes(): NotesApi {
       title: string,
       content: string,
       color: NoteColor = "default",
+      labels: ReadonlyArray<string> = [],
     ): Note | null => {
       const trimmedTitle: string = title.trim();
       const trimmedContent: string = content.trim();
       if (trimmedTitle.length === 0 && trimmedContent.length === 0) return null;
 
-      const note: Note = { ...createNote(trimmedTitle, trimmedContent), color };
+      const note: Note = {
+        ...createNote(trimmedTitle, trimmedContent),
+        color,
+        labels,
+      };
       setNotes(
         (prev: ReadonlyArray<Note>): ReadonlyArray<Note> => [note, ...prev],
       );

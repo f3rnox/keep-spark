@@ -21,12 +21,18 @@ export type NoteColor =
 export type NoteView = 'notes' | 'archive' | 'trash'
 
 /**
+ * Layout used to render the note collection.
+ */
+export type NoteLayout = 'grid' | 'stacked'
+
+/**
  * A single user-authored note persisted to local storage.
  */
 export interface Note {
   id: string
   title: string
   content: string
+  labels: ReadonlyArray<string>
   color: NoteColor
   pinned: boolean
   archived: boolean
