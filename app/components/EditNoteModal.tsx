@@ -397,14 +397,14 @@ export function EditNoteModal({
         aria-modal='true'
         aria-label='Edit note'
         onClick={close}
-        className='fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
+        className='fixed inset-0 z-40 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4'
       >
         <div
           onClick={stop}
           onKeyDown={stop}
-          className={`relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-border bg-surface ${classes.tint} ${stripClass} text-foreground shadow-2xl shadow-black/20`}
+          className={`relative flex h-dvh max-h-dvh w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl border border-border bg-surface sm:h-auto sm:max-h-[90vh] sm:rounded-2xl ${classes.tint} ${stripClass} text-foreground shadow-2xl shadow-black/20`}
         >
-          <div className='flex items-start justify-between gap-2 px-5 pt-4'>
+          <div className='flex items-start justify-between gap-2 px-4 pt-3 sm:px-5 sm:pt-4'>
             <div className='flex min-w-0 flex-1 items-center gap-2'>
               {isEncryptedDraft ? (
                 <span className='shrink-0 text-muted' title='Password protected'>
@@ -453,7 +453,7 @@ export function EditNoteModal({
             <div className={`flex min-h-0 flex-col ${showPreview && unlocked ? 'lg:w-1/2 lg:border-r lg:border-border' : 'w-full'}`}>
               {unlocked ? (
                 <>
-                  <div className='px-5 pt-2'>
+                  <div className='px-4 pt-2 sm:px-5'>
                     <MarkdownToolbar
                       textareaRef={contentRef}
                       value={content}
@@ -474,11 +474,11 @@ export function EditNoteModal({
                     onDrop={handleDrop}
                     placeholder='Write something... Use [[Note Title]] to link notes.'
                     rows={showPreview ? 10 : 8}
-                    className='min-h-[200px] w-full flex-1 resize-none bg-transparent px-5 py-3 text-[15px] leading-relaxed outline-none placeholder:text-muted'
+                    className='min-h-[160px] w-full flex-1 resize-none bg-transparent px-4 py-3 text-[15px] leading-relaxed outline-none placeholder:text-muted sm:min-h-[200px] sm:px-5'
                   />
                 </>
               ) : (
-                <div className='flex min-h-[200px] flex-col items-center justify-center gap-4 px-5 py-8'>
+                <div className='flex min-h-[160px] flex-col items-center justify-center gap-4 px-4 py-6 sm:min-h-[200px] sm:px-5 sm:py-8'>
                   <span className='text-muted'>
                     <Icon name='lock' size={28} />
                   </span>
@@ -521,7 +521,7 @@ export function EditNoteModal({
             </div>
 
             {showPreview && unlocked ? (
-              <div className='min-h-0 flex-1 overflow-y-auto px-5 py-3 lg:w-1/2'>
+              <div className='min-h-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5 lg:w-1/2'>
                 <p className='mb-2 text-xs font-medium text-muted'>Preview</p>
                 <NoteContent
                   content={content}
@@ -539,7 +539,7 @@ export function EditNoteModal({
             ) : null}
           </div>
 
-          <div className='px-5 pb-2'>
+          <div className='px-4 pb-2 sm:px-5'>
             <LabelEditor labels={labels} onChange={setLabels} />
             <div className='mt-2'>
               <DueDatePicker dueAt={dueAt} onChange={setDueAt} />
@@ -548,8 +548,8 @@ export function EditNoteModal({
 
           <BacklinksPanel backlinks={backlinks} onOpen={onOpenNote} />
 
-          <div className='relative flex items-center justify-between px-3 pb-3 pt-1'>
-            <div className='flex items-center gap-1'>
+          <div className='safe-bottom relative flex flex-col gap-2 px-3 pt-1 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex flex-wrap items-center gap-1'>
               <ListPicker
                 listId={note.listId}
                 lists={lists}
@@ -600,7 +600,7 @@ export function EditNoteModal({
             <button
               type='button'
               onClick={close}
-              className='rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-on-accent transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+              className='w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto sm:py-1.5'
             >
               Done
             </button>

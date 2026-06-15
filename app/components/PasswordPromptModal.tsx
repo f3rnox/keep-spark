@@ -51,13 +51,13 @@ export function PasswordPromptModal({
       role='dialog'
       aria-modal='true'
       aria-label={title}
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
+      className='fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4'
       onClick={onCancel}
     >
       <form
         onClick={(event): void => event.stopPropagation()}
         onSubmit={handleSubmit}
-        className='w-full max-w-sm rounded-2xl border border-border bg-surface p-5 shadow-2xl shadow-black/20'
+        className='safe-bottom w-full max-w-sm rounded-t-2xl border border-border bg-surface p-5 shadow-2xl shadow-black/20 sm:rounded-2xl'
       >
         <div className='mb-4 flex items-start gap-3'>
           <span className='mt-0.5 text-muted'>

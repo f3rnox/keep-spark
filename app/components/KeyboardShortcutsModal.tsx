@@ -47,12 +47,12 @@ export function KeyboardShortcutsModal({ onClose }: KeyboardShortcutsModalProps)
       aria-modal='true'
       aria-label='Keyboard shortcuts'
       onClick={onClose}
-      className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm'
+      className='fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4'
     >
       <div
         onClick={stopPropagation}
         onKeyDown={stopPropagation}
-        className='flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-surface text-foreground shadow-2xl shadow-black/20'
+        className='flex max-h-[90dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-2xl border border-border bg-surface text-foreground shadow-2xl shadow-black/20 sm:max-h-[85vh] sm:rounded-2xl'
       >
         <div className='flex items-center justify-between gap-3 border-b border-border px-5 py-4'>
           <div className='flex items-center gap-2.5'>

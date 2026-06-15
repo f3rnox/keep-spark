@@ -34,7 +34,7 @@ const TABS: ReadonlyArray<NavTab> = [
  */
 export function NavTabs({ view, counts, onSelect }: NavTabsProps): JSX.Element {
   return (
-    <nav aria-label='Primary' className='flex items-center gap-1'>
+    <nav aria-label='Primary' className='flex w-max min-w-full items-center gap-0.5 sm:gap-1 sm:min-w-0 sm:w-auto'>
       {TABS.map((tab: NavTab): JSX.Element => {
         const active: boolean = tab.id === view
         return (
@@ -43,7 +43,7 @@ export function NavTabs({ view, counts, onSelect }: NavTabsProps): JSX.Element {
             type='button'
             onClick={(): void => onSelect(tab.id)}
             aria-current={active ? 'page' : undefined}
-            className={`relative -mb-px flex items-center gap-2 px-3 py-3 text-sm transition-colors ${
+            className={`relative -mb-px flex shrink-0 items-center gap-1.5 px-2 py-2.5 text-sm transition-colors sm:gap-2 sm:px-3 sm:py-3 ${
               active
                 ? 'font-medium text-foreground'
                 : 'text-muted hover:text-foreground'

@@ -72,9 +72,11 @@ export function SettingsShell({
         onClearRecents={clearRecents}
       />
 
-      <div className='mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 sm:px-6 lg:flex-row lg:gap-10'>
+      <div className='mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-3 py-6 sm:px-6 sm:py-8 lg:flex-row lg:gap-10'>
         <aside className='lg:w-72 lg:shrink-0'>
-          <SettingsNav />
+          <div className='-mx-3 overflow-x-auto px-3 pb-1 scrollbar-thin lg:mx-0 lg:overflow-visible lg:px-0 lg:pb-0'>
+            <SettingsNav />
+          </div>
         </aside>
 
         <main className='min-w-0 flex-1 space-y-6'>

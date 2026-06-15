@@ -486,12 +486,14 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
         onClearRecents={clearRecents}
       />
 
-      <div className='sticky top-16 z-20 border-b border-border bg-canvas/80 backdrop-blur'>
-        <div className='mx-auto w-full max-w-6xl px-4 sm:px-6'>
-          <div className='flex items-center justify-between gap-4'>
-            <NavTabs view={view} counts={counts} onSelect={handleSelectView} />
+      <div className='sticky top-14 z-20 border-b border-border bg-canvas/80 backdrop-blur sm:top-16'>
+        <div className='mx-auto w-full max-w-6xl px-3 sm:px-6'>
+          <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4'>
+            <div className='-mx-3 overflow-x-auto px-3 scrollbar-thin sm:mx-0 sm:overflow-visible sm:px-0'>
+              <NavTabs view={view} counts={counts} onSelect={handleSelectView} />
+            </div>
             {!browsingLists ? (
-              <div className='flex items-center gap-2'>
+              <div className='flex shrink-0 items-center justify-end gap-1 overflow-x-auto pb-2 sm:gap-2 sm:pb-0'>
                 {query.trim().length > 0 ? (
                   <SearchScopeSelector
                     scope={searchScope}
@@ -530,7 +532,9 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
         </div>
       </div>
 
-      <main className='mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6'>
+      <main
+        className={`mx-auto w-full max-w-6xl flex-1 px-3 py-6 sm:px-6 sm:py-10${selectionActive ? ' pb-28 sm:pb-10' : ''}`}
+      >
         {browsingLists ? (
           <>
             <ListBrowser
@@ -560,7 +564,7 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
             ) : null}
 
             {showEditor ? (
-              <div className='mb-12'>
+              <div className='mb-8 sm:mb-12'>
                 <NoteEditor
                   ref={editorRef}
                   listId={editorListId}

@@ -222,7 +222,7 @@ export function NoteCard({
                 event.stopPropagation()
                 onTogglePinned(note.id)
               }}
-              className={`-mt-1.5 -mr-1.5 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              className={`-mt-1.5 -mr-1.5 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-sm:opacity-100 ${
                 note.pinned
                   ? 'text-foreground'
                   : 'text-muted opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
@@ -270,7 +270,7 @@ export function NoteCard({
       </div>
 
       {!selectionActive ? (
-        <div className='flex items-center justify-between px-2 pb-2 pt-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100'>
+        <div className='flex items-center justify-between px-2 pb-2 pt-1 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'>
           {isTrash ? (
             <div className='flex items-center gap-1'>
               <IconButton

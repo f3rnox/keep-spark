@@ -73,16 +73,16 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
   }
 
   return (
-    <header className='sticky top-0 z-30 border-b border-border bg-canvas/80 backdrop-blur'>
-      <div className='mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:gap-3 sm:px-6'>
-        <Link href='/' className='flex shrink-0 items-center gap-2'>
+    <header className='safe-top sticky top-0 z-30 border-b border-border bg-canvas/80 backdrop-blur'>
+      <div className='mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-3 sm:h-16 sm:gap-3 sm:px-6'>
+        <Link href='/' className='flex shrink-0 items-center gap-2' aria-label='KeepSpark home'>
           <span className='h-2.5 w-2.5 rounded-full bg-accent' />
-          <span className='text-[15px] font-semibold tracking-tight text-foreground'>
+          <span className='hidden text-[15px] font-semibold tracking-tight text-foreground sm:inline'>
             KeepSpark
           </span>
         </Link>
 
-        <div className='ml-auto flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2'>
+        <div className='ml-auto flex min-w-0 flex-1 items-center justify-end gap-0.5 sm:gap-2'>
           <div ref={wrapperRef} className='relative min-w-0 flex-1 max-w-md'>
           <label className='flex h-10 w-full items-center gap-2.5 rounded-xl border border-transparent bg-surface-hover px-3 text-muted transition focus-within:border-border focus-within:bg-surface'>
             <Icon name='search' size={18} />
@@ -143,10 +143,11 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
           ) : null}
           </div>
 
-          <div className='flex shrink-0 items-center gap-1'>
+          <div className='flex shrink-0 items-center gap-0.5 sm:gap-1'>
             <GlobalEncryptionButton />
             <IconButton
               label='Keyboard shortcuts'
+              className='hidden sm:inline-flex'
               onClick={(): void => setShortcutsOpen(true)}
             >
               <Icon name='keyboard' size={18} />
