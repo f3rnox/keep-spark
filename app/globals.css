@@ -4,7 +4,8 @@
    every `dark:` utility (instead of the OS preference alone). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
+:root,
+[data-theme='light'] {
   --canvas: #fafaf9;
   --surface: #ffffff;
   --surface-hover: #f4f4f3;
@@ -16,7 +17,7 @@
   --ring: #a8a29e;
 }
 
-.dark {
+[data-theme='dark'] {
   --canvas: #0b0b0c;
   --surface: #161618;
   --surface-hover: #202023;
@@ -26,6 +27,90 @@
   --accent: #f4f4f3;
   --on-accent: #161618;
   --ring: #4b4b50;
+}
+
+[data-theme='ocean'] {
+  --canvas: #f0f9ff;
+  --surface: #ffffff;
+  --surface-hover: #e0f2fe;
+  --border: #bae6fd;
+  --foreground: #0c4a6e;
+  --muted: #0369a1;
+  --accent: #0369a1;
+  --on-accent: #f0f9ff;
+  --ring: #7dd3fc;
+}
+
+[data-theme='forest'] {
+  --canvas: #f0fdf4;
+  --surface: #ffffff;
+  --surface-hover: #dcfce7;
+  --border: #bbf7d0;
+  --foreground: #14532d;
+  --muted: #166534;
+  --accent: #15803d;
+  --on-accent: #f0fdf4;
+  --ring: #86efac;
+}
+
+[data-theme='rose'] {
+  --canvas: #fff1f2;
+  --surface: #ffffff;
+  --surface-hover: #ffe4e6;
+  --border: #fecdd3;
+  --foreground: #881337;
+  --muted: #9f1239;
+  --accent: #be123c;
+  --on-accent: #fff1f2;
+  --ring: #fda4af;
+}
+
+[data-theme='lavender'] {
+  --canvas: #faf5ff;
+  --surface: #ffffff;
+  --surface-hover: #f3e8ff;
+  --border: #e9d5ff;
+  --foreground: #4c1d95;
+  --muted: #6d28d9;
+  --accent: #7c3aed;
+  --on-accent: #faf5ff;
+  --ring: #c4b5fd;
+}
+
+[data-theme='sepia'] {
+  --canvas: #fefce8;
+  --surface: #fffbeb;
+  --surface-hover: #fef9c3;
+  --border: #fde68a;
+  --foreground: #713f12;
+  --muted: #92400e;
+  --accent: #a16207;
+  --on-accent: #fefce8;
+  --ring: #fcd34d;
+}
+
+[data-theme='slate'] {
+  --canvas: #0f172a;
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --border: #475569;
+  --foreground: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --on-accent: #0f172a;
+  --ring: #64748b;
+}
+
+[data-theme='ember'] {
+  --canvas: #1c1412;
+  --surface: #292018;
+  --surface-hover: #3b2f26;
+  --border: #44403c;
+  --foreground: #fafaf9;
+  --muted: #a8a29e;
+  --accent: #fb923c;
+  --on-accent: #1c1412;
+  --ring: #78716c;
 }
 
 @theme inline {

@@ -1,4 +1,5 @@
 import type { MasterPasswordVerifier } from './masterPasswordVerifier'
+import { showSettingSaved } from './settingToastStore'
 
 const STORAGE_KEY: string = 'keepspark:master-password-verifier'
 
@@ -80,6 +81,7 @@ export function setMasterPasswordVerifier(verifier: MasterPasswordVerifier): voi
   snapshot = verifier
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(verifier))
   for (const listener of listeners) listener()
+  showSettingSaved('Encryption password saved')
 }
 
 /**
@@ -91,4 +93,5 @@ export function clearMasterPasswordVerifier(): void {
   snapshot = null
   window.localStorage.removeItem(STORAGE_KEY)
   for (const listener of listeners) listener()
+  showSettingSaved('Encryption password removed')
 }

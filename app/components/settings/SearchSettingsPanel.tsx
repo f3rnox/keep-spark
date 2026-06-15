@@ -1,6 +1,7 @@
 'use client'
 
 import type { JSX } from 'react'
+import { showSettingSaved } from '../../lib/settingToastStore'
 import { useRecentSearches } from '../../lib/useRecentSearches'
 import { Icon } from '../Icon'
 import { SettingsRow } from './SettingsRow'
@@ -41,7 +42,10 @@ export function SearchSettingsPanel(): JSX.Element {
       {recents.length > 0 ? (
         <button
           type='button'
-          onClick={clearRecents}
+          onClick={(): void => {
+            clearRecents()
+            showSettingSaved('Recent searches cleared')
+          }}
           className='rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-surface-hover'
         >
           Clear all recent searches

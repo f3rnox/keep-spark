@@ -1,3 +1,5 @@
+import { showSettingSaved } from './settingToastStore'
+
 const STORAGE_KEY: string = 'keepspark:auto-lock-minutes'
 
 /** Minutes of inactivity before locking encryption sessions. `0` disables auto-lock. */
@@ -62,9 +64,11 @@ export function subscribeAutoLock(listener: () => void): () => void {
 export function setAutoLockMinutes(minutes: AutoLockMinutes): void {
   if (typeof window === 'undefined') return
   ensureHydrated()
+  if (snapshot === minutes) return
   snapshot = minutes
   window.localStorage.setItem(STORAGE_KEY, String(minutes))
   for (const listener of listeners) listener()
+  showSettingSaved('Auto-lock saved')
 }
 
 /**

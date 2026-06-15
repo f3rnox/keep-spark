@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useState, type JSX } from 'react'
+import { showSettingSaved } from '../../lib/settingToastStore'
 import { SettingsRow } from './SettingsRow'
 import { SettingsSection } from './SettingsSection'
 
@@ -23,6 +24,9 @@ export function NotificationsSettingsPanel(): JSX.Element {
     if (typeof window === 'undefined' || !('Notification' in window)) return
     const result: NotificationPermission = await Notification.requestPermission()
     setPermission(result)
+    if (result === 'granted') {
+      showSettingSaved('Notifications enabled')
+    }
   }, [])
 
   const permissionLabel: string = ((): string => {

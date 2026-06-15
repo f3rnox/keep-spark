@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import type { JSX, ReactNode } from 'react'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration'
+import { SettingToast } from './components/SettingToast'
 import { THEME_SCRIPT } from './lib/themeScript'
 import './globals.css'
 
@@ -17,6 +19,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'KeepSpark',
   description: 'KeepSpark — a minimalist note-taking web UI',
+  applicationName: 'KeepSpark',
+  appleWebApp: {
+    capable: true,
+    title: 'KeepSpark',
+    statusBarStyle: 'default',
+  },
+  formatDetection: {
+    telephone: false,
+  },
 }
 
 export const viewport: Viewport = {
@@ -45,6 +56,8 @@ export default function RootLayout({
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
         />
+        <ServiceWorkerRegistration />
+        <SettingToast />
         {children}
       </body>
     </html>

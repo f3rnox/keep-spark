@@ -1,4 +1,5 @@
 import type { NoteSort } from './types'
+import { showSettingSaved } from './settingToastStore'
 
 const STORAGE_KEY: string = 'keepspark:sort'
 
@@ -58,4 +59,5 @@ export function setSort(next: NoteSort): void {
   snapshot = next
   window.localStorage.setItem(STORAGE_KEY, next)
   for (const listener of listeners) listener()
+  showSettingSaved('Sort order saved')
 }

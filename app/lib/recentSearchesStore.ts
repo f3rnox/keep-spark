@@ -1,11 +1,11 @@
 const STORAGE_KEY: string = 'keepspark:recent-searches:v1'
 const MAX_RECENTS: number = 8
 
-let snapshot: ReadonlyArray<string> = []
+const SERVER_SNAPSHOT: ReadonlyArray<string> = []
+
+let snapshot: ReadonlyArray<string> = SERVER_SNAPSHOT
 let hydrated: boolean = false
 const listeners: Set<() => void> = new Set()
-
-const SERVER_SNAPSHOT: ReadonlyArray<string> = []
 
 function ensureHydrated(): void {
   if (hydrated) return
@@ -19,7 +19,7 @@ function ensureHydrated(): void {
       }
     }
   } catch {
-    snapshot = []
+    snapshot = SERVER_SNAPSHOT
   }
   hydrated = true
 }
@@ -91,7 +91,7 @@ export function removeRecentSearch(query: string): void {
 export function clearRecentSearches(): void {
   if (typeof window === 'undefined') return
   ensureHydrated()
-  snapshot = []
+  snapshot = SERVER_SNAPSHOT
   window.localStorage.removeItem(STORAGE_KEY)
   for (const listener of listeners) listener()
 }

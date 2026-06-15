@@ -1,10 +1,13 @@
 'use client'
 
 import { useCallback, useSyncExternalStore } from 'react'
-import type { NoteLayout } from './types'
+import type { EditorPane, NoteLayout } from './types'
 import {
-  getLayoutServerSnapshot,
-  getLayoutSnapshot,
+  getEditorPaneServerSnapshot,
+  getEditorPaneSnapshot,
+  getNoteLayoutServerSnapshot,
+  getNoteLayoutSnapshot,
+  setEditorPane,
   setNoteLayout,
   subscribeLayout,
 } from './layoutStore'
@@ -15,22 +18,38 @@ import {
 export interface NoteLayoutApi {
   layout: NoteLayout
   setLayout: (next: NoteLayout) => void
+  editorPane: EditorPane
+  setEditorPane: (next: EditorPane) => void
 }
 
 /**
- * Subscribes to the shared layout store and exposes the active layout together
- * with a referentially stable setter.
+ * Subscribes to the shared layout store and exposes note layout together with
+ * editor pane preferences and referentially stable setters.
  */
 export function useNoteLayout(): NoteLayoutApi {
   const layout: NoteLayout = useSyncExternalStore(
     subscribeLayout,
-    getLayoutSnapshot,
-    getLayoutServerSnapshot,
+    getNoteLayoutSnapshot,
+    getNoteLayoutServerSnapshot,
+  )
+  const editorPane: EditorPane = useSyncExternalStore(
+    subscribeLayout,
+    getEditorPaneSnapshot,
+    getEditorPaneServerSnapshot,
   )
 
   const setLayout = useCallback((next: NoteLayout): void => {
     setNoteLayout(next)
   }, [])
 
-  return { layout, setLayout }
+  const setEditorPanePreference = useCallback((next: EditorPane): void => {
+    setEditorPane(next)
+  }, [])
+
+  return {
+    layout,
+    setLayout,
+    editorPane,
+    setEditorPane: setEditorPanePreference,
+  }
 }
