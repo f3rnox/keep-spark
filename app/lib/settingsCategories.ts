@@ -9,6 +9,7 @@ export type SettingsCategoryId =
   | 'search'
   | 'notifications'
   | 'security'
+  | 'sync'
   | 'data'
   | 'shortcuts'
   | 'about'
@@ -62,6 +63,13 @@ export const SETTINGS_CATEGORIES: ReadonlyArray<SettingsCategory> = [
     label: 'Encryption',
     description: 'Master password for locked notes',
     icon: 'lock',
+  },
+  {
+    id: 'sync',
+    href: '/settings/sync',
+    label: 'Cloud sync',
+    description: 'Supabase account and cross-device sync',
+    icon: 'upload',
   },
   {
     id: 'data',

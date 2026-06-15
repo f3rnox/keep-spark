@@ -168,7 +168,7 @@ export function DataSettingsPanel(): JSX.Element {
     <div className='space-y-8'>
       <SettingsSection
         title='Local storage'
-        description='Notes and lists are stored in your browser via IndexedDB. Preferences use localStorage.'
+        description='Notes and lists are stored in your browser via IndexedDB. Sign in under Cloud sync to back up to Supabase.'
       >
         <SettingsRow label='Notes on this device' description='Active notes across all views.'>
           <span className='text-sm tabular-nums text-muted'>{notes.length}</span>

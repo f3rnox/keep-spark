@@ -16,6 +16,7 @@ import { IconButton } from './IconButton'
 import { IconLink } from './IconLink'
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal'
 import { GlobalEncryptionButton } from './GlobalEncryptionButton'
+import { HeaderSignInButton } from './HeaderSignInButton'
 import { ThemeToggle } from './ThemeToggle'
 
 /**
@@ -156,6 +157,7 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
               <Icon name='settings' size={18} />
             </IconLink>
             <ThemeToggle />
+            <HeaderSignInButton />
           </div>
         </div>
       </div>

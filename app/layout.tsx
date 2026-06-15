@@ -4,6 +4,7 @@ import type { JSX, ReactNode } from 'react'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ServiceWorkerRegistration } from './components/ServiceWorkerRegistration'
 import { SettingToast } from './components/SettingToast'
+import { SupabaseSyncProvider } from './components/SupabaseSyncProvider'
 import { THEME_SCRIPT } from './lib/themeScript'
 import './globals.css'
 
@@ -59,6 +60,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }}
         />
         <ServiceWorkerRegistration />
+        <SupabaseSyncProvider />
         <SettingToast />
         {children}
       </body>
