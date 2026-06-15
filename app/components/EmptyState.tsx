@@ -10,6 +10,7 @@ import { Icon, type IconName } from './Icon'
 export interface EmptyStateProps {
   view: NoteView
   searching: boolean
+  inList?: boolean
 }
 
 interface EmptyConfig {
@@ -19,6 +20,7 @@ interface EmptyConfig {
 
 const EMPTY: Record<NoteView, EmptyConfig> = {
   notes: { icon: 'lightbulb', title: 'Notes you add appear here' },
+  lists: { icon: 'list', title: 'Create a list to organize your notes' },
   archive: { icon: 'archive', title: 'Your archived notes appear here' },
   trash: { icon: 'trash', title: 'No notes in Trash' },
 }
@@ -31,9 +33,13 @@ const EMPTY: Record<NoteView, EmptyConfig> = {
  * @param props.view The current view, controlling icon/title.
  * @param props.searching True when a search query is active.
  */
-export function EmptyState({ view, searching }: EmptyStateProps): JSX.Element {
+export function EmptyState({ view, searching, inList = false }: EmptyStateProps): JSX.Element {
   const config = EMPTY[view]
-  const title: string = searching ? 'No matching notes found' : config.title
+  const title: string = searching
+    ? 'No matching notes found'
+    : inList
+      ? 'No notes in this list'
+      : config.title
 
   return (
     <div className='flex flex-col items-center justify-center px-6 py-28 text-center'>

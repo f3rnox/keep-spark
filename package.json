@@ -1,6 +1,6 @@
 {
-  "name": "keep-web",
-  "description": "A Node.JS Note-Taking Web UI",
+  "name": "keepspark",
+  "description": "KeepSpark — a minimalist note-taking web UI",
   "version": "0.1.0",
   "private": true,
   "scripts": {

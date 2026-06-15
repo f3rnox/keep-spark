@@ -26,7 +26,7 @@ export function Header({ query, onQueryChange }: HeaderProps): JSX.Element {
         <div className='flex shrink-0 items-center gap-2'>
           <span className='h-2.5 w-2.5 rounded-full bg-accent' />
           <span className='text-[15px] font-semibold tracking-tight text-foreground'>
-            notes
+            KeepSpark
           </span>
         </div>
 

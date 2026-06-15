@@ -18,12 +18,27 @@ export type NoteColor =
 /**
  * The high-level filter the user is currently viewing.
  */
-export type NoteView = 'notes' | 'archive' | 'trash'
+export type NoteView = 'notes' | 'lists' | 'archive' | 'trash'
 
 /**
  * Layout used to render the note collection.
  */
 export type NoteLayout = 'grid' | 'stacked'
+
+/**
+ * Scope applied when filtering notes by list membership.
+ */
+export type ListFilter = 'inbox' | 'all' | string
+
+/**
+ * A user-defined named list used to group notes.
+ */
+export interface NoteList {
+  id: string
+  name: string
+  createdAt: number
+  updatedAt: number
+}
 
 /**
  * A single user-authored note persisted to local storage.
@@ -34,6 +49,7 @@ export interface Note {
   content: string
   labels: ReadonlyArray<string>
   color: NoteColor
+  listId: string | null
   pinned: boolean
   archived: boolean
   trashed: boolean

@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState, type JSX } from 'react'
-import type { Note, NoteColor, NoteView } from '../lib/types'
+import type { Note, NoteColor, NoteList, NoteView } from '../lib/types'
 import { getNoteColorClasses } from '../lib/colors'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
+import { ListPicker } from './ListPicker'
 import { MarkdownBody } from './MarkdownBody'
 
 /**
@@ -14,12 +15,15 @@ import { MarkdownBody } from './MarkdownBody'
 export interface NoteCardProps {
   note: Note
   view: NoteView
+  lists: ReadonlyArray<NoteList>
   onOpen: (note: Note) => void
   onTogglePinned: (id: string) => void
   onSetArchived: (id: string, archived: boolean) => void
   onSetTrashed: (id: string, trashed: boolean) => void
   onDeleteForever: (id: string) => void
   onChangeColor: (id: string, color: NoteColor) => void
+  onSetListId: (id: string, listId: string | null) => void
+  onCreateList?: (name: string) => NoteList | null
 }
 
 /**
@@ -30,12 +34,15 @@ export interface NoteCardProps {
 export function NoteCard({
   note,
   view,
+  lists,
   onOpen,
   onTogglePinned,
   onSetArchived,
   onSetTrashed,
   onDeleteForever,
   onChangeColor,
+  onSetListId,
+  onCreateList,
 }: NoteCardProps): JSX.Element {
   const [showPalette, setShowPalette] = useState<boolean>(false)
   const paletteRef = useRef<HTMLDivElement | null>(null)
@@ -146,6 +153,12 @@ export function NoteCard({
           </div>
         ) : (
           <div className='relative flex items-center gap-1' ref={paletteRef}>
+            <ListPicker
+              listId={note.listId}
+              lists={lists}
+              onChange={(listId: string | null): void => onSetListId(note.id, listId)}
+              onCreateList={onCreateList}
+            />
             <IconButton
               label='Background options'
               active={showPalette}

@@ -22,11 +22,13 @@ import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
  * Props for the inline `NoteEditor` placed at the top of the notes view.
  */
 export interface NoteEditorProps {
+  listId?: string | null
   onCreate: (
     title: string,
     content: string,
     color: NoteColor,
     labels: ReadonlyArray<string>,
+    listId?: string | null,
   ) => void
 }
 
@@ -38,7 +40,7 @@ export interface NoteEditorProps {
  * @param props.onCreate Invoked with the trimmed title/content/color/labels when
  *                       the user finishes composing a note.
  */
-export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
+export function NoteEditor({ listId = null, onCreate }: NoteEditorProps): JSX.Element {
   const [expanded, setExpanded] = useState<boolean>(false)
   const [title, setTitle] = useState<string>('')
   const [content, setContent] = useState<string>('')
@@ -62,9 +64,9 @@ export function NoteEditor({ onCreate }: NoteEditorProps): JSX.Element {
       reset()
       return
     }
-    onCreate(title, content, color, labels)
+    onCreate(title, content, color, labels, listId)
     reset()
-  }, [title, content, color, labels, onCreate, reset])
+  }, [title, content, color, labels, listId, onCreate, reset])
 
   useEffect((): (() => void) | void => {
     if (!expanded) return

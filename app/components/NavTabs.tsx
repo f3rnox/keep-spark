@@ -19,6 +19,7 @@ interface NavTab {
 
 const TABS: ReadonlyArray<NavTab> = [
   { id: 'notes', label: 'Notes' },
+  { id: 'lists', label: 'Lists' },
   { id: 'archive', label: 'Archive' },
   { id: 'trash', label: 'Trash' },
 ]

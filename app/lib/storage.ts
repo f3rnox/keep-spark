@@ -4,7 +4,7 @@ import type { Note } from './types'
  * `localStorage` key under which the entire notes collection is serialized as
  * JSON. Bumped if the stored shape ever changes.
  */
-export const STORAGE_KEY: string = 'keep-web:notes:v1'
+export const STORAGE_KEY: string = 'keepspark:notes:v1'
 
 /**
  * Ensures a parsed note entry has the expected shape, migrating older records
@@ -34,6 +34,7 @@ function coerceNote(entry: unknown): Note | null {
     content: candidate.content,
     labels,
     color: candidate.color ?? 'default',
+    listId: typeof candidate.listId === 'string' ? candidate.listId : null,
     pinned: candidate.pinned ?? false,
     archived: candidate.archived ?? false,
     trashed: candidate.trashed ?? false,

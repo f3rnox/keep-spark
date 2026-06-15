@@ -1,4 +1,4 @@
-import type { Note, NoteView } from './types'
+import type { ListFilter, Note, NoteView } from './types'
 
 /**
  * Lower-cases and trims a search query before substring matching.
@@ -10,17 +10,31 @@ function normalizeQuery(query: string): string {
 }
 
 /**
+ * Returns whether a note matches the supplied list filter.
+ *
+ * @param note Note to test.
+ * @param listFilter Scope controlling list membership.
+ */
+function matchesListFilter(note: Note, listFilter: ListFilter): boolean {
+  if (listFilter === 'all') return true
+  if (listFilter === 'inbox') return note.listId === null
+  return note.listId === listFilter
+}
+
+/**
  * Filters the supplied notes down to those that belong to the given view and
  * match the (optional) full-text search query.
  *
  * @param notes The full notes collection.
- * @param view Active high-level filter (notes/archive/trash).
+ * @param view Active high-level filter (notes/archive/trash/lists).
  * @param query Optional case-insensitive substring query.
+ * @param listFilter Optional list scope; defaults to `all`.
  */
 export function filterNotes(
   notes: ReadonlyArray<Note>,
   view: NoteView,
   query: string,
+  listFilter: ListFilter = 'all',
 ): ReadonlyArray<Note> {
   const normalized: string = normalizeQuery(query)
 
@@ -31,6 +45,7 @@ export function filterNotes(
       if (note.trashed || !note.archived) return false
     } else {
       if (note.trashed || note.archived) return false
+      if (!matchesListFilter(note, listFilter)) return false
     }
 
     if (normalized.length === 0) return true

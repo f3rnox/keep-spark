@@ -24,6 +24,8 @@ export type IconName =
   | 'moon'
   | 'grid'
   | 'stacked'
+  | 'list'
+  | 'chevronLeft'
 
 const PATHS: Record<IconName, JSX.Element> = {
   menu: (
@@ -166,6 +168,23 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d='M4 12h16' strokeLinecap='round' />
       <path d='M4 17h16' strokeLinecap='round' />
     </>
+  ),
+  list: (
+    <>
+      <path d='M8 6h13' strokeLinecap='round' />
+      <path d='M8 12h13' strokeLinecap='round' />
+      <path d='M8 18h13' strokeLinecap='round' />
+      <circle cx='4' cy='6' r='1' fill='currentColor' />
+      <circle cx='4' cy='12' r='1' fill='currentColor' />
+      <circle cx='4' cy='18' r='1' fill='currentColor' />
+    </>
+  ),
+  chevronLeft: (
+    <path
+      d='m15 6-6 6 6 6'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    />
   ),
 }
 

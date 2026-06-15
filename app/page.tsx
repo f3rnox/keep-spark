@@ -1,10 +1,10 @@
 import type { JSX } from 'react'
-import { KeepApp } from './components/KeepApp'
+import { KeepSparkApp } from './components/KeepSparkApp'
 
 /**
- * Root route for the Google Keep clone. Renders the client-side app shell
- * which owns all interactive state and persistence.
+ * Root route for KeepSpark. Renders the client-side app shell which owns all
+ * interactive state and persistence.
  */
 export default function Home(): JSX.Element {
-  return <KeepApp />
+  return <KeepSparkApp />
 }

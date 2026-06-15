@@ -27,11 +27,13 @@ export interface NotesApi {
     content: string,
     color?: NoteColor,
     labels?: ReadonlyArray<string>,
+    listId?: string | null,
   ) => Note | null;
   updateNote: (id: string, patch: NoteUpdate) => void;
   togglePinned: (id: string) => void;
   setArchived: (id: string, archived: boolean) => void;
   setTrashed: (id: string, trashed: boolean) => void;
+  setListId: (id: string, listId: string | null) => void;
   deleteForever: (id: string) => void;
   emptyTrash: () => void;
 }
@@ -53,6 +55,7 @@ export function useNotes(): NotesApi {
       content: string,
       color: NoteColor = "default",
       labels: ReadonlyArray<string> = [],
+      listId: string | null = null,
     ): Note | null => {
       const trimmedTitle: string = title.trim();
       const trimmedContent: string = content.trim();
@@ -62,6 +65,7 @@ export function useNotes(): NotesApi {
         ...createNote(trimmedTitle, trimmedContent),
         color,
         labels,
+        listId,
       };
       setNotes(
         (prev: ReadonlyArray<Note>): ReadonlyArray<Note> => [note, ...prev],
@@ -136,6 +140,18 @@ export function useNotes(): NotesApi {
     );
   }, []);
 
+  const setListId = useCallback((id: string, listId: string | null): void => {
+    setNotes(
+      (prev: ReadonlyArray<Note>): ReadonlyArray<Note> =>
+        prev.map(
+          (note: Note): Note =>
+            note.id === id
+              ? { ...note, listId, updatedAt: Date.now() }
+              : note,
+        ),
+    );
+  }, []);
+
   const deleteForever = useCallback((id: string): void => {
     setNotes(
       (prev: ReadonlyArray<Note>): ReadonlyArray<Note> =>
@@ -158,6 +174,7 @@ export function useNotes(): NotesApi {
       togglePinned,
       setArchived,
       setTrashed,
+      setListId,
       deleteForever,
       emptyTrash,
     }),
@@ -168,6 +185,7 @@ export function useNotes(): NotesApi {
       togglePinned,
       setArchived,
       setTrashed,
+      setListId,
       deleteForever,
       emptyTrash,
     ],

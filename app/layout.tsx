@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Notes',
-  description: 'A minimalist note-taking web UI',
+  title: 'KeepSpark',
+  description: 'KeepSpark — a minimalist note-taking web UI',
 }
 
 /**

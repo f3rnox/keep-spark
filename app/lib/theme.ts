@@ -6,4 +6,4 @@ export type Theme = 'light' | 'dark'
 /**
  * localStorage key under which the user's explicit theme choice is persisted.
  */
-export const THEME_STORAGE_KEY: string = 'notes-theme'
+export const THEME_STORAGE_KEY: string = 'keepspark:theme'

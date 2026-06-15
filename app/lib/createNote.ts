@@ -21,6 +21,7 @@ export function createNote(title: string, content: string): Note {
     content,
     labels: [],
     color: 'default',
+    listId: null,
     pinned: false,
     archived: false,
     trashed: false,

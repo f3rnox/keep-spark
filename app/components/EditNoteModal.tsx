@@ -10,12 +10,13 @@ import {
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
-import type { Note, NoteColor } from '../lib/types'
+import type { Note, NoteColor, NoteList } from '../lib/types'
 import { getNoteColorClasses } from '../lib/colors'
 import { ColorPicker } from './ColorPicker'
 import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { LabelEditor } from './LabelEditor'
+import { ListPicker } from './ListPicker'
 import { MarkdownToolbar } from './MarkdownToolbar'
 import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
 
@@ -24,6 +25,7 @@ import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
  */
 export interface EditNoteModalProps {
   note: Note
+  lists: ReadonlyArray<NoteList>
   onSave: (
     id: string,
     patch: {
@@ -36,6 +38,8 @@ export interface EditNoteModalProps {
   onTogglePinned: (id: string) => void
   onSetArchived: (id: string, archived: boolean) => void
   onSetTrashed: (id: string, trashed: boolean) => void
+  onSetListId: (id: string, listId: string | null) => void
+  onCreateList?: (name: string) => NoteList | null
   onClose: () => void
 }
 
@@ -53,10 +57,13 @@ export interface EditNoteModalProps {
  */
 export function EditNoteModal({
   note,
+  lists,
   onSave,
   onTogglePinned,
   onSetArchived,
   onSetTrashed,
+  onSetListId,
+  onCreateList,
   onClose,
 }: EditNoteModalProps): JSX.Element {
   const [title, setTitle] = useState<string>(note.title)
@@ -158,6 +165,12 @@ export function EditNoteModal({
 
         <div className='relative flex items-center justify-between px-3 pb-3 pt-1'>
           <div className='flex items-center gap-1'>
+            <ListPicker
+              listId={note.listId}
+              lists={lists}
+              onChange={(listId: string | null): void => onSetListId(note.id, listId)}
+              onCreateList={onCreateList}
+            />
             <IconButton
               label='Background options'
               active={showPalette}
