@@ -1,5 +1,6 @@
 import type { Note } from './types'
 import { noteLinkPattern } from './noteLinkPattern'
+import { isNoteEncrypted } from './isNoteEncrypted'
 
 /**
  * Finds notes whose content references the target note via `[[title]]` links.
@@ -18,6 +19,7 @@ export function findBacklinks(
 
   return notes.filter((note: Note): boolean => {
     if (note.id === target.id) return false
+    if (isNoteEncrypted(note)) return false
     return pattern.test(note.content)
   })
 }

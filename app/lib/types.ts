@@ -51,6 +51,15 @@ export interface NoteList {
 }
 
 /**
+ * Metadata stored alongside ciphertext for a password-protected note.
+ */
+export interface NoteCipher {
+  iv: string
+  salt: string
+  iterations: number
+}
+
+/**
  * A single user-authored note persisted to local storage.
  */
 export interface Note {
@@ -65,6 +74,8 @@ export interface Note {
   trashed: boolean
   trashedAt: number | null
   dueAt: number | null
+  encrypted: boolean
+  cipher: NoteCipher | null
   createdAt: number
   updatedAt: number
 }

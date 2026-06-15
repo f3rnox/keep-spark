@@ -15,6 +15,7 @@ import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { IconLink } from './IconLink'
 import { KeyboardShortcutsModal } from './KeyboardShortcutsModal'
+import { GlobalEncryptionButton } from './GlobalEncryptionButton'
 import { ThemeToggle } from './ThemeToggle'
 
 /**
@@ -143,6 +144,7 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
           </div>
 
           <div className='flex shrink-0 items-center gap-1'>
+            <GlobalEncryptionButton />
             <IconButton
               label='Keyboard shortcuts'
               onClick={(): void => setShortcutsOpen(true)}

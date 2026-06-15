@@ -1,4 +1,5 @@
 import type { Note } from './types'
+import { coerceNoteCipher } from './coerceNoteCipher'
 
 /**
  * Ensures a parsed note entry has the expected shape, migrating older records.
@@ -32,6 +33,9 @@ export function coerceNote(entry: unknown): Note | null {
   const dueAt: number | null =
     typeof candidate.dueAt === 'number' ? candidate.dueAt : null
 
+  const encrypted: boolean = candidate.encrypted === true
+  const cipher = encrypted ? coerceNoteCipher(candidate.cipher) : null
+
   return {
     id: candidate.id,
     title: candidate.title,
@@ -44,6 +48,8 @@ export function coerceNote(entry: unknown): Note | null {
     trashed,
     trashedAt,
     dueAt,
+    encrypted: encrypted && cipher !== null,
+    cipher,
     createdAt: candidate.createdAt ?? Date.now(),
     updatedAt: candidate.updatedAt ?? Date.now(),
   }

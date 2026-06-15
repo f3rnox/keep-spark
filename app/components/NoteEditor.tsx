@@ -7,13 +7,26 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  useSyncExternalStore,
   type ChangeEvent,
   type ClipboardEvent,
   type DragEvent,
   type JSX,
   type KeyboardEvent,
 } from 'react'
-import type { NoteColor } from '../lib/types'
+import Link from 'next/link'
+import type { NoteColor, NoteCipher, Note } from '../lib/types'
+import { encryptNoteContent } from '../lib/encryptNoteContent'
+import { base64ToBytes } from '../lib/base64ToBytes'
+import { deriveKeyFromPassword } from '../lib/deriveKeyFromPassword'
+import { setSessionKey } from '../lib/encryptionSessionStore'
+import { getEncryptionPassword } from '../lib/getEncryptionPassword'
+import { unlockGlobalEncryption } from '../lib/unlockGlobalEncryption'
+import {
+  getGlobalEncryptionVersion,
+  subscribeGlobalEncryption,
+} from '../lib/globalEncryptionSession'
+import { useMasterPassword } from '../lib/useMasterPassword'
 import { getNoteColorClasses } from '../lib/colors'
 import { handleMarkdownKeyDown } from '../lib/handleMarkdownKeyDown'
 import { insertImageMarkdown } from '../lib/insertImageMarkdown'
@@ -24,6 +37,7 @@ import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 import { LabelEditor } from './LabelEditor'
 import { MarkdownToolbar } from './MarkdownToolbar'
+import { PasswordPromptModal } from './PasswordPromptModal'
 
 /**
  * Handle exposed to parent components for controlling the inline editor.
@@ -43,7 +57,8 @@ export interface NoteEditorProps {
     color: NoteColor,
     labels: ReadonlyArray<string>,
     listId?: string | null,
-  ) => void
+    encryption?: { encrypted: boolean, cipher: NoteCipher | null },
+  ) => Note | null | Promise<Note | null>
 }
 
 /**
@@ -61,8 +76,24 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function
   const [labels, setLabels] = useState<ReadonlyArray<string>>([])
   const [color, setColor] = useState<NoteColor>('default')
   const [showPalette, setShowPalette] = useState<boolean>(false)
+  const [lockNote, setLockNote] = useState<boolean>(false)
+  const [showConfigurePrompt, setShowConfigurePrompt] = useState<boolean>(false)
+  const [showUnlockPrompt, setShowUnlockPrompt] = useState<boolean>(false)
+  const [unlockError, setUnlockError] = useState<string | null>(null)
+  const [unlockBusy, setUnlockBusy] = useState<boolean>(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const { hasMasterPassword } = useMasterPassword()
+  const globalVersion: number = useSyncExternalStore(
+    subscribeGlobalEncryption,
+    getGlobalEncryptionVersion,
+    (): number => 0,
+  )
+  void globalVersion
+
   const wrapperRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLTextAreaElement | null>(null)
+  const globalPassword: string | null = getEncryptionPassword()
 
   const reset = useCallback((): void => {
     setTitle('')
@@ -71,16 +102,113 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function
     setColor('default')
     setExpanded(false)
     setShowPalette(false)
+    setLockNote(false)
+    setShowConfigurePrompt(false)
+    setShowUnlockPrompt(false)
+    setUnlockError(null)
+    setUnlockBusy(false)
+    setSubmitError(null)
+    setSubmitting(false)
   }, [])
 
-  const submit = useCallback((): void => {
+  const handleUnlockForLock = useCallback(async (password: string): Promise<void> => {
+    setUnlockBusy(true)
+    setUnlockError(null)
+    try {
+      const unlocked: boolean = await unlockGlobalEncryption(password)
+      if (!unlocked) {
+        setUnlockError('Incorrect password')
+        return
+      }
+      setShowUnlockPrompt(false)
+      setLockNote(true)
+    } catch {
+      setUnlockError('Incorrect password')
+    } finally {
+      setUnlockBusy(false)
+    }
+  }, [])
+
+  const handleLockToggle = useCallback((): void => {
+    if (lockNote) {
+      setLockNote(false)
+      setShowConfigurePrompt(false)
+      return
+    }
+
+    if (!hasMasterPassword) {
+      setShowConfigurePrompt(true)
+      return
+    }
+
+    if (globalPassword === null) {
+      setShowUnlockPrompt(true)
+      return
+    }
+
+    setLockNote(true)
+  }, [lockNote, hasMasterPassword, globalPassword])
+
+  const submit = useCallback(async (): Promise<void> => {
     if (title.trim().length === 0 && content.trim().length === 0) {
       reset()
       return
     }
-    onCreate(title, content, color, labels, listId)
-    reset()
-  }, [title, content, color, labels, listId, onCreate, reset])
+
+    if (lockNote) {
+      if (!hasMasterPassword) {
+        setShowConfigurePrompt(true)
+        return
+      }
+
+      const encryptionPassword: string | null = getEncryptionPassword()
+      if (encryptionPassword === null) {
+        setShowUnlockPrompt(true)
+        return
+      }
+
+      setSubmitting(true)
+      setSubmitError(null)
+
+      try {
+        const plaintextContent: string = content
+        const encrypted = await encryptNoteContent(title, plaintextContent, encryptionPassword)
+        const salt: Uint8Array<ArrayBuffer> = base64ToBytes(encrypted.cipher.salt)
+        const key: CryptoKey = await deriveKeyFromPassword(
+          encryptionPassword,
+          salt,
+          encrypted.cipher.iterations,
+        )
+        const created: Note | null = await onCreate(
+          encrypted.title,
+          encrypted.content,
+          color,
+          labels,
+          listId,
+          { encrypted: true, cipher: encrypted.cipher },
+        )
+        if (created) {
+          setSessionKey(created.id, key, plaintextContent)
+        }
+        reset()
+      } catch {
+        setSubmitError('Could not create encrypted note')
+        setSubmitting(false)
+      }
+      return
+    }
+
+    setSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      await onCreate(title, content, color, labels, listId)
+      reset()
+    } catch {
+      setSubmitError('Could not create note')
+      setSubmitting(false)
+    }
+  }, [title, content, color, labels, listId, lockNote, hasMasterPassword, onCreate, reset])
 
   useImperativeHandle(
     ref,
@@ -95,11 +223,12 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function
     const handler = (event: MouseEvent): void => {
       if (!wrapperRef.current) return
       if (event.target instanceof Node && wrapperRef.current.contains(event.target)) return
-      submit()
+      if (lockNote && getEncryptionPassword() === null) return
+      void submit()
     }
     document.addEventListener('mousedown', handler)
     return (): void => document.removeEventListener('mousedown', handler)
-  }, [expanded, submit])
+  }, [expanded, submit, lockNote])
 
   useEffect((): void => {
     if (expanded && contentRef.current) {
@@ -154,81 +283,125 @@ export const NoteEditor = forwardRef<NoteEditorHandle, NoteEditorProps>(function
   const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
 
   return (
-    <div className='flex w-full justify-center'>
-      <div
-        ref={wrapperRef}
-        onKeyDown={handleKeyDown}
-        className={`w-full max-w-2xl rounded-xl border border-border bg-surface ${classes.tint} ${stripClass} transition-colors`}
-      >
-        {expanded ? (
-          <div className='flex flex-col gap-1 px-4 py-3.5'>
-            <input
-              type='text'
-              value={title}
-              onChange={(event: ChangeEvent<HTMLInputElement>): void =>
-                setTitle(event.target.value)
-              }
-              placeholder='Title'
-              className='w-full bg-transparent text-[15px] font-semibold tracking-tight text-foreground outline-none placeholder:font-normal placeholder:text-muted'
-            />
-            <MarkdownToolbar
-              textareaRef={contentRef}
-              value={content}
-              onChange={setContent}
-            />
-            <textarea
-              ref={contentRef}
-              value={content}
-              onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
-                setContent(event.target.value)
-              }
-              onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
-                handleMarkdownKeyDown(event, content, setContent)
-              }}
-              onPaste={handlePaste}
-              onDrop={handleDrop}
-              placeholder='Write something...'
-              rows={3}
-              className='w-full resize-none bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted'
-            />
-            <LabelEditor labels={labels} onChange={setLabels} />
-            <div className='relative mt-1 flex items-center justify-between'>
-              <div className='flex items-center'>
-                <IconButton
-                  label='Background options'
-                  active={showPalette}
-                  onClick={(): void => setShowPalette((prev: boolean): boolean => !prev)}
-                >
-                  <Icon name='palette' size={18} />
-                </IconButton>
-              </div>
-              <button
-                type='button'
-                onClick={submit}
-                className='rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-on-accent transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
-              >
-                Add
-              </button>
-              {showPalette ? (
-                <div className='absolute left-0 top-11 z-10 rounded-xl border border-border bg-surface p-2.5 shadow-lg shadow-black/5'>
-                  <ColorPicker value={color} onChange={setColor} />
+    <>
+      {showUnlockPrompt ? (
+        <PasswordPromptModal
+          title='Unlock encryption'
+          description='Enter your encryption password to lock this note.'
+          confirmLabel='Unlock'
+          error={unlockError}
+          busy={unlockBusy}
+          onSubmit={handleUnlockForLock}
+          onCancel={(): void => {
+            setShowUnlockPrompt(false)
+            setUnlockError(null)
+          }}
+        />
+      ) : null}
+
+      <div className='flex w-full justify-center'>
+        <div
+          ref={wrapperRef}
+          onKeyDown={handleKeyDown}
+          className={`w-full max-w-2xl rounded-xl border border-border bg-surface ${classes.tint} ${stripClass} transition-colors`}
+        >
+          {expanded ? (
+            <div className='flex flex-col gap-1 px-4 py-3.5'>
+              <input
+                type='text'
+                value={title}
+                onChange={(event: ChangeEvent<HTMLInputElement>): void =>
+                  setTitle(event.target.value)
+                }
+                placeholder='Title'
+                className='w-full bg-transparent text-[15px] font-semibold tracking-tight text-foreground outline-none placeholder:font-normal placeholder:text-muted'
+              />
+              <MarkdownToolbar
+                textareaRef={contentRef}
+                value={content}
+                onChange={setContent}
+              />
+              <textarea
+                ref={contentRef}
+                value={content}
+                onChange={(event: ChangeEvent<HTMLTextAreaElement>): void =>
+                  setContent(event.target.value)
+                }
+                onKeyDown={(event: KeyboardEvent<HTMLTextAreaElement>): void => {
+                  handleMarkdownKeyDown(event, content, setContent)
+                }}
+                onPaste={handlePaste}
+                onDrop={handleDrop}
+                placeholder='Write something...'
+                rows={3}
+                className='w-full resize-none bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted'
+              />
+              <LabelEditor labels={labels} onChange={setLabels} />
+              {showConfigurePrompt ? (
+                <div className='mt-2 rounded-lg border border-border bg-canvas/50 p-3 text-sm text-muted'>
+                  <p>Set an encryption password before locking notes.</p>
+                  <Link
+                    href='/settings/security'
+                    className='mt-2 inline-block font-medium text-foreground underline underline-offset-2'
+                  >
+                    Configure encryption password
+                  </Link>
                 </div>
               ) : null}
+              {lockNote && hasMasterPassword && globalPassword !== null ? (
+                <p className='text-xs text-muted'>Will be locked with your encryption password.</p>
+              ) : null}
+              {submitError ? (
+                <p className='text-sm text-red-600 dark:text-red-400'>{submitError}</p>
+              ) : null}
+              <div className='relative mt-1 flex items-center justify-between'>
+                <div className='flex items-center'>
+                  <IconButton
+                    label={lockNote ? 'Note will be password-protected' : 'Protect with password'}
+                    active={lockNote}
+                    onClick={handleLockToggle}
+                  >
+                    <Icon name={lockNote ? 'lock' : 'lockOpen'} size={18} />
+                  </IconButton>
+                  <IconButton
+                    label='Background options'
+                    active={showPalette}
+                    onClick={(): void => setShowPalette((prev: boolean): boolean => !prev)}
+                  >
+                    <Icon name='palette' size={18} />
+                  </IconButton>
+                </div>
+                <button
+                  type='button'
+                  onClick={(): void => {
+                    void submit()
+                  }}
+                  disabled={submitting}
+                  className='rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-on-accent transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50'
+                >
+                  {submitting ? 'Adding…' : 'Add'}
+                </button>
+                {showPalette ? (
+                  <div className='absolute left-0 top-11 z-10 rounded-xl border border-border bg-surface p-2.5 shadow-lg shadow-black/5'>
+                    <ColorPicker value={color} onChange={setColor} />
+                  </div>
+                ) : null}
+              </div>
             </div>
-          </div>
-        ) : (
-          <button
-            type='button'
-            onClick={(): void => setExpanded(true)}
-            className='flex w-full items-center justify-between px-4 py-3.5 text-left text-sm text-muted transition-colors hover:text-foreground'
-          >
-            <span>Write something...</span>
-            <span className='text-muted'>
-              <Icon name='plus' size={18} />
-            </span>
-          </button>
-        )}
+          ) : (
+            <button
+              type='button'
+              onClick={(): void => setExpanded(true)}
+              className='flex w-full items-center justify-between px-4 py-3.5 text-left text-sm text-muted transition-colors hover:text-foreground'
+            >
+              <span>Write something...</span>
+              <span className='text-muted'>
+                <Icon name='plus' size={18} />
+              </span>
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 })

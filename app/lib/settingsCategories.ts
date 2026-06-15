@@ -8,6 +8,7 @@ export type SettingsCategoryId =
   | 'appearance'
   | 'search'
   | 'notifications'
+  | 'security'
   | 'data'
   | 'shortcuts'
   | 'about'
@@ -54,6 +55,13 @@ export const SETTINGS_CATEGORIES: ReadonlyArray<SettingsCategory> = [
     label: 'Notifications',
     description: 'Due-date reminders and permissions',
     icon: 'bell',
+  },
+  {
+    id: 'security',
+    href: '/settings/security',
+    label: 'Encryption',
+    description: 'Master password for locked notes',
+    icon: 'lock',
   },
   {
     id: 'data',

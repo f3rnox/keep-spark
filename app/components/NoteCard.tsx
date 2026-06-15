@@ -5,6 +5,9 @@ import type { Note, NoteColor, NoteList, NoteView } from '../lib/types'
 import { formatDueDate } from '../lib/formatDueDate'
 import { isNoteOverdue } from '../lib/isNoteOverdue'
 import { getNoteColorClasses } from '../lib/colors'
+import { getNoteDisplayTitle } from '../lib/getNoteDisplayTitle'
+import { isNoteEncrypted } from '../lib/isNoteEncrypted'
+import { useNoteSessionPreview } from '../lib/useNoteSessionPreview'
 import { ColorPicker } from './ColorPicker'
 import { HighlightText } from './HighlightText'
 import { Icon } from './Icon'
@@ -86,6 +89,14 @@ export function NoteCard({
   }, [showPalette])
 
   const isTrash: boolean = view === 'trash'
+  const encrypted: boolean = isNoteEncrypted(note)
+  const { unlockedInSession, previewContent } = useNoteSessionPreview(note.id)
+  const displayTitle: string = getNoteDisplayTitle(note)
+  const showContent: boolean = note.content.length > 0 && (!encrypted || unlockedInSession)
+  const bodyContent: string =
+    encrypted && unlockedInSession && previewContent !== undefined
+      ? previewContent
+      : note.content
   const stripClass: string = classes.strip.length > 0 ? `border-l-4 ${classes.strip}` : ''
   const isOverdue: boolean = isNoteOverdue(note.dueAt) && !note.trashed && !note.archived
 
@@ -157,7 +168,7 @@ export function NoteCard({
                 checked={selected}
                 onChange={(): void => onToggleSelect?.(note.id)}
                 className='h-4 w-4 accent-accent'
-                aria-label={`Select ${note.title || 'note'}`}
+                aria-label={`Select ${displayTitle || 'note'}`}
               />
             </label>
           ) : null}
@@ -181,9 +192,15 @@ export function NoteCard({
                 {formatDueDate(note.dueAt)}
               </span>
             ) : null}
-            {note.title.length > 0 ? (
+            {encrypted ? (
+              <span className='mb-1 inline-flex items-center gap-1 rounded-full bg-surface-hover px-2 py-0.5 text-[10px] font-medium text-muted'>
+                <Icon name='lock' size={12} />
+                Encrypted
+              </span>
+            ) : null}
+            {displayTitle.length > 0 ? (
               <h3 className='line-clamp-3 break-words text-[15px] font-semibold tracking-tight'>
-                <HighlightText text={note.title} query={searchQuery} />
+                <HighlightText text={displayTitle} query={searchQuery} />
               </h3>
             ) : (
               <span className='sr-only'>Untitled note</span>
@@ -234,15 +251,17 @@ export function NoteCard({
                 )}
               </div>
             ) : null}
-            {note.content.length > 0 ? (
+            {showContent ? (
               <NoteContent
-                content={note.content}
+                content={bodyContent}
                 className='line-clamp-6 break-words pb-1 pt-2 text-sm text-muted'
                 interactive={!isTrash && !selectionActive}
                 searchQuery={searchQuery}
                 onContentChange={(next: string): void => onContentChange?.(note.id, next)}
                 onNoteLinkClick={onNoteLinkClick}
               />
+            ) : encrypted && !unlockedInSession ? (
+              <p className='pb-1 pt-2 text-sm italic text-muted'>Content is hidden until unlocked</p>
             ) : (
               <div className='h-2' />
             )}

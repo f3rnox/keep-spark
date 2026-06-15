@@ -5,6 +5,7 @@ import type {
   ListFilter,
   Note,
   NoteColor,
+  NoteCipher,
   NoteList as NamedList,
   NoteView,
   SearchScope,
@@ -13,6 +14,7 @@ import { collectLabels } from '../lib/collectLabels'
 import { filterNotes } from '../lib/filterNotes'
 import { findNoteByTitle } from '../lib/findNoteByTitle'
 import { partitionPinned } from '../lib/partitionPinned'
+import { isNoteEncrypted } from '../lib/isNoteEncrypted'
 import { reorderNotesInSection } from '../lib/reorderNotesInSection'
 import { sortNotes } from '../lib/sortNotes'
 import { setSort } from '../lib/sortStore'
@@ -23,7 +25,7 @@ import { useRecentSearches } from '../lib/useRecentSearches'
 import { useReminders } from '../lib/useReminders'
 import { useSortPreference } from '../lib/useSortPreference'
 import { BulkActionBar } from './BulkActionBar'
-import { EditNoteModal } from './EditNoteModal'
+import { EditNoteModal, type EditNoteSavePatch } from './EditNoteModal'
 import { EmptyState } from './EmptyState'
 import { Header } from './Header'
 import { LabelFilter } from './LabelFilter'
@@ -259,9 +261,11 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
         onChangeColor={(id: string, color: NoteColor): void => updateNote(id, { color })}
         onSetListId={setListId}
         onCreateList={addList}
-        onContentChange={(id: string, content: string): void =>
-          updateNote(id, { content }, { recordHistory: false })
-        }
+        onContentChange={(id: string, nextContent: string): void => {
+          const target: Note | undefined = notes.find((note: Note): boolean => note.id === id)
+          if (target && isNoteEncrypted(target)) return
+          updateNote(id, { content: nextContent }, { recordHistory: false })
+        }}
         onLabelClick={(label: string): void => {
           setView('notes')
           setSelectedListId(null)
@@ -422,9 +426,10 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
                     color: NoteColor,
                     labels: ReadonlyArray<string>,
                     listId?: string | null,
-                  ): void => {
-                    addNote(title, content, color, labels, listId ?? null)
-                  }}
+                    encryption?: { encrypted: boolean, cipher: NoteCipher | null },
+                  ): Note | null =>
+                    addNote(title, content, color, labels, listId ?? null, encryption)
+                  }
                 />
               </div>
             ) : null}
@@ -472,19 +477,11 @@ export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Elem
 
       {editingNote ? (
         <EditNoteModal
+          key={editingNote.id}
           note={editingNote}
           notes={notes}
           lists={lists}
-          onSave={(
-            id: string,
-            patch: {
-              title: string
-              content: string
-              color: NoteColor
-              labels: ReadonlyArray<string>
-              dueAt: number | null
-            },
-          ): void => updateNote(id, patch)}
+          onSave={(id: string, patch: EditNoteSavePatch): void => updateNote(id, patch)}
           onTogglePinned={togglePinned}
           onSetArchived={setArchived}
           onSetTrashed={setTrashed}

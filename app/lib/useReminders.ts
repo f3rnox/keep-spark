@@ -29,8 +29,11 @@ export function useReminders(notes: ReadonlyArray<Note>): void {
 
         if (Notification.permission === 'granted') {
           const title: string = note.title.length > 0 ? note.title : 'Reminder'
+          const body: string = note.encrypted
+            ? 'Encrypted note reminder'
+            : note.content.slice(0, 120) || 'Note reminder'
           new Notification(title, {
-            body: note.content.slice(0, 120) || 'Note reminder',
+            body,
             tag: note.id,
           })
         }

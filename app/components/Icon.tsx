@@ -34,6 +34,8 @@ export type IconName =
   | 'keyboard'
   | 'download'
   | 'upload'
+  | 'lock'
+  | 'lockOpen'
 
 const PATHS: Record<IconName, JSX.Element> = {
   menu: (
@@ -248,6 +250,18 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d='M12 21V9' strokeLinecap='round' />
       <path d='m8 13 4-4 4 4' strokeLinecap='round' strokeLinejoin='round' />
       <path d='M4 7h16' strokeLinecap='round' />
+    </>
+  ),
+  lock: (
+    <>
+      <rect x='5' y='11' width='14' height='10' rx='2' />
+      <path d='M8 11V8a4 4 0 0 1 8 0v3' strokeLinecap='round' />
+    </>
+  ),
+  lockOpen: (
+    <>
+      <rect x='5' y='11' width='14' height='10' rx='2' />
+      <path d='M8 11V8a4 4 0 0 1 7.5-1' strokeLinecap='round' />
     </>
   ),
 }

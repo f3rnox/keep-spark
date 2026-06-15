@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
-import type { Note, NoteColor } from './types'
+import type { Note, NoteColor, NoteCipher } from './types'
 import { createNote } from './createNote'
 import { reorderByIds } from './reorderByIds'
 import {
@@ -37,6 +37,7 @@ export interface NotesApi {
     color?: NoteColor,
     labels?: ReadonlyArray<string>,
     listId?: string | null,
+    encryption?: { encrypted: boolean, cipher: NoteCipher | null },
   ) => Note | null
   updateNote: (id: string, patch: NoteUpdate, options?: { recordHistory?: boolean }) => void
   togglePinned: (id: string) => void
@@ -85,16 +86,20 @@ export function useNotes(): NotesApi {
       color: NoteColor = 'default',
       labels: ReadonlyArray<string> = [],
       listId: string | null = null,
+      encryption?: { encrypted: boolean, cipher: NoteCipher | null },
     ): Note | null => {
       const trimmedTitle: string = title.trim()
       const trimmedContent: string = content.trim()
-      if (trimmedTitle.length === 0 && trimmedContent.length === 0) return null
+      const isEncrypted: boolean = encryption?.encrypted === true
+      if (!isEncrypted && trimmedTitle.length === 0 && trimmedContent.length === 0) return null
 
       const note: Note = {
         ...createNote(trimmedTitle, trimmedContent),
         color,
         labels,
         listId,
+        encrypted: isEncrypted,
+        cipher: isEncrypted ? encryption?.cipher ?? null : null,
       }
       setNotes(
         (prev: ReadonlyArray<Note>): ReadonlyArray<Note> => [note, ...prev],

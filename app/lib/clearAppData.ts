@@ -9,6 +9,8 @@ import { STORAGE_KEY } from './storage'
 import { saveListsToIdb } from './saveListsToIdb'
 import { saveNotesToIdb } from './saveNotesToIdb'
 import { setTheme } from './themeStore'
+import { clearMasterPasswordVerifier } from './masterPasswordStore'
+import { lockGlobalEncryptionSession } from './globalEncryptionSession'
 
 /**
  * Removes all locally stored notes, lists, and preferences.
@@ -23,6 +25,8 @@ export async function clearAppData(): Promise<void> {
   setSort('updated')
   setNoteLayout(DEFAULT_NOTE_LAYOUT)
   setTheme('light')
+  clearMasterPasswordVerifier()
+  lockGlobalEncryptionSession()
 
   try {
     window.localStorage.removeItem(STORAGE_KEY)

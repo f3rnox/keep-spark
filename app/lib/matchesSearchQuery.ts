@@ -1,5 +1,6 @@
 import type { Note } from './types'
 import { tokenizeSearchQuery } from './tokenizeSearchQuery'
+import { isNoteEncrypted } from './isNoteEncrypted'
 
 /**
  * Returns whether a note matches all search tokens across title, content, labels,
@@ -19,7 +20,7 @@ export function matchesSearchQuery(
 
   const haystack: string = [
     note.title,
-    note.content,
+    ...(isNoteEncrypted(note) ? [] : [note.content]),
     ...note.labels,
     listName ?? '',
   ]
