@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   forwardRef,
   useEffect,
@@ -10,6 +12,9 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { Icon } from './Icon'
+import { IconButton } from './IconButton'
+import { IconLink } from './IconLink'
+import { KeyboardShortcutsModal } from './KeyboardShortcutsModal'
 import { ThemeToggle } from './ThemeToggle'
 
 /**
@@ -41,7 +46,10 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
   },
   ref,
 ): JSX.Element {
+  const pathname: string = usePathname()
+  const settingsActive: boolean = pathname.startsWith('/settings')
   const [open, setOpen] = useState<boolean>(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState<boolean>(false)
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
   useEffect((): (() => void) | void => {
@@ -65,15 +73,16 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
 
   return (
     <header className='sticky top-0 z-30 border-b border-border bg-canvas/80 backdrop-blur'>
-      <div className='mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6'>
-        <div className='flex shrink-0 items-center gap-2'>
+      <div className='mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:gap-3 sm:px-6'>
+        <Link href='/' className='flex shrink-0 items-center gap-2'>
           <span className='h-2.5 w-2.5 rounded-full bg-accent' />
           <span className='text-[15px] font-semibold tracking-tight text-foreground'>
             KeepSpark
           </span>
-        </div>
+        </Link>
 
-        <div ref={wrapperRef} className='relative ml-auto w-full max-w-md'>
+        <div className='ml-auto flex min-w-0 flex-1 items-center justify-end gap-1 sm:gap-2'>
+          <div ref={wrapperRef} className='relative min-w-0 flex-1 max-w-md'>
           <label className='flex h-10 w-full items-center gap-2.5 rounded-xl border border-transparent bg-surface-hover px-3 text-muted transition focus-within:border-border focus-within:bg-surface'>
             <Icon name='search' size={18} />
             <input
@@ -131,10 +140,26 @@ export const Header = forwardRef<HTMLInputElement, HeaderProps>(function Header(
               )}
             </div>
           ) : null}
-        </div>
+          </div>
 
-        <ThemeToggle />
+          <div className='flex shrink-0 items-center gap-1'>
+            <IconButton
+              label='Keyboard shortcuts'
+              onClick={(): void => setShortcutsOpen(true)}
+            >
+              <Icon name='keyboard' size={18} />
+            </IconButton>
+            <IconLink href='/settings' label='Settings' active={settingsActive}>
+              <Icon name='settings' size={18} />
+            </IconLink>
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
+
+      {shortcutsOpen ? (
+        <KeyboardShortcutsModal onClose={(): void => setShortcutsOpen(false)} />
+      ) : null}
     </header>
   )
 })

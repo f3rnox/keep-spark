@@ -43,10 +43,17 @@ import { IconButton } from './IconButton'
 import { useNoteLayout } from '../lib/useNoteLayout'
 
 /**
+ * Props for the KeepSpark app shell.
+ */
+export interface KeepSparkAppProps {
+  initialQuery?: string
+}
+
+/**
  * Top-level KeepSpark shell. Owns view selection, search query, and the
  * currently-edited note. Delegates persistence to `useNotes` and `useLists`.
  */
-export function KeepSparkApp(): JSX.Element {
+export function KeepSparkApp({ initialQuery = '' }: KeepSparkAppProps): JSX.Element {
   const {
     notes,
     canUndo,
@@ -77,7 +84,7 @@ export function KeepSparkApp(): JSX.Element {
 
   const [view, setView] = useState<NoteView>('notes')
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
-  const [query, setQuery] = useState<string>('')
+  const [query, setQuery] = useState<string>(initialQuery)
   const [searchScope, setSearchScope] = useState<SearchScope>('view')
   const [labelFilter, setLabelFilter] = useState<string | null>(null)
   const [editing, setEditing] = useState<Note | null>(null)
