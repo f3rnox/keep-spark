@@ -6,6 +6,8 @@ import type { Theme } from './theme'
  */
 export interface SyncSettingsPayload {
   theme: Theme
+  lightTheme: Theme
+  darkTheme: Theme
   layout: NoteLayout
   editorPane: EditorPane
   sort: NoteSort

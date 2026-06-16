@@ -1,4 +1,5 @@
-import { THEME_DEFINITIONS, THEME_STORAGE_KEY, resolveTheme } from './theme'
+import { THEME_DEFINITIONS } from './theme'
+import { getThemeSnapshot, migrateThemePreferences } from './themeStore'
 
 /**
  * Applies the persisted or system-preferred theme before React paints.
@@ -7,14 +8,17 @@ export function bootstrapTheme(): void {
   if (globalThis.window === undefined) return
 
   try {
-    const stored: string | null = globalThis.window.localStorage.getItem(THEME_STORAGE_KEY)
-    const prefersDark: boolean = globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches
-    const theme = resolveTheme(stored, prefersDark)
+    migrateThemePreferences()
+    const theme = getThemeSnapshot()
     const root: HTMLElement = document.documentElement
     const definition = THEME_DEFINITIONS[theme]
 
     root.dataset.theme = theme
-    root.classList.toggle('dark', definition.isDark)
+    if (definition.isDark) {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
     root.style.colorScheme = definition.isDark ? 'dark' : 'light'
   } catch {
     /* ignore storage or media-query failures */

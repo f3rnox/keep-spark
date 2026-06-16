@@ -3,8 +3,14 @@
 import { useSyncExternalStore } from 'react'
 import type { Theme } from './theme'
 import {
+  getDarkThemeServerSnapshot,
+  getDarkThemeSnapshot,
+  getLightThemeServerSnapshot,
+  getLightThemeSnapshot,
   getThemeServerSnapshot,
   getThemeSnapshot,
+  setDarkTheme,
+  setLightTheme,
   setTheme,
   subscribeTheme,
   toggleTheme,
@@ -15,7 +21,11 @@ import {
  */
 export interface ThemeApi {
   theme: Theme
+  lightTheme: Theme
+  darkTheme: Theme
   setTheme: (next: Theme) => void
+  setLightTheme: (next: Theme) => void
+  setDarkTheme: (next: Theme) => void
   toggleTheme: () => void
 }
 
@@ -30,6 +40,24 @@ export function useTheme(): ThemeApi {
     getThemeSnapshot,
     getThemeServerSnapshot,
   )
+  const lightTheme: Theme = useSyncExternalStore(
+    subscribeTheme,
+    getLightThemeSnapshot,
+    getLightThemeServerSnapshot,
+  )
+  const darkTheme: Theme = useSyncExternalStore(
+    subscribeTheme,
+    getDarkThemeSnapshot,
+    getDarkThemeServerSnapshot,
+  )
 
-  return { theme, setTheme, toggleTheme }
+  return {
+    theme,
+    lightTheme,
+    darkTheme,
+    setTheme,
+    setLightTheme,
+    setDarkTheme,
+    toggleTheme,
+  }
 }

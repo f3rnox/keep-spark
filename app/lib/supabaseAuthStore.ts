@@ -14,6 +14,11 @@ const SERVER_SNAPSHOT: SupabaseAuthSnapshot = {
   user: null,
 }
 
+const SIGNED_OUT_SNAPSHOT: SupabaseAuthSnapshot = {
+  status: 'signed-out',
+  user: null,
+}
+
 let snapshot: SupabaseAuthSnapshot = SERVER_SNAPSHOT
 let initialized: boolean = false
 const listeners: Set<() => void> = new Set()
@@ -22,7 +27,13 @@ function notifyListeners(): void {
   for (const listener of listeners) listener()
 }
 
+/**
+ * Updates the cached snapshot only when auth state actually changes.
+ *
+ * @param next Next auth snapshot.
+ */
 function setSnapshot(next: SupabaseAuthSnapshot): void {
+  if (snapshot.status === next.status && snapshot.user === next.user) return
   snapshot = next
   notifyListeners()
 }
@@ -31,16 +42,18 @@ function setSnapshot(next: SupabaseAuthSnapshot): void {
  * Boots Supabase auth listeners on first client access.
  */
 export function initSupabaseAuth(): void {
-  if (initialized || typeof window === 'undefined' || !isSupabaseConfigured()) {
-    if (!isSupabaseConfigured()) {
-      setSnapshot({ status: 'signed-out', user: null })
-    }
+  if (initialized || typeof window === 'undefined') return
+
+  if (!isSupabaseConfigured()) {
+    setSnapshot(SIGNED_OUT_SNAPSHOT)
+    initialized = true
     return
   }
 
   const supabase = getSupabaseClient()
   if (supabase === null) {
-    setSnapshot({ status: 'signed-out', user: null })
+    setSnapshot(SIGNED_OUT_SNAPSHOT)
+    initialized = true
     return
   }
 

@@ -4,7 +4,7 @@
    every `dark:` utility (instead of the OS preference alone). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root,
+:root:not([data-theme]),
 [data-theme='light'] {
   --canvas: #fafaf9;
   --surface: #ffffff;
@@ -15,6 +15,7 @@
   --accent: #1c1917;
   --on-accent: #fafaf9;
   --ring: #a8a29e;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -42,6 +43,7 @@
   --accent: #f4f4f3;
   --on-accent: #161618;
   --ring: #4b4b50;
+  color-scheme: dark;
 }
 
 [data-theme='ocean'] {
@@ -56,6 +58,19 @@
   --ring: #7dd3fc;
 }
 
+[data-theme='abyss'] {
+  --canvas: #0a1628;
+  --surface: #0f1f38;
+  --surface-hover: #1e3a5f;
+  --border: #1e3a5f;
+  --foreground: #e0f2fe;
+  --muted: #7dd3fc;
+  --accent: #38bdf8;
+  --on-accent: #0a1628;
+  --ring: #0ea5e9;
+  color-scheme: dark;
+}
+
 [data-theme='forest'] {
   --canvas: #f0fdf4;
   --surface: #ffffff;
@@ -66,6 +81,19 @@
   --accent: #15803d;
   --on-accent: #f0fdf4;
   --ring: #86efac;
+}
+
+[data-theme='pine'] {
+  --canvas: #0a1f12;
+  --surface: #0f2e1a;
+  --surface-hover: #166534;
+  --border: #166534;
+  --foreground: #dcfce7;
+  --muted: #86efac;
+  --accent: #4ade80;
+  --on-accent: #0a1f12;
+  --ring: #22c55e;
+  color-scheme: dark;
 }
 
 [data-theme='rose'] {
@@ -80,6 +108,19 @@
   --ring: #fda4af;
 }
 
+[data-theme='crimson'] {
+  --canvas: #1a0610;
+  --surface: #2d0a1a;
+  --surface-hover: #881337;
+  --border: #881337;
+  --foreground: #ffe4e6;
+  --muted: #fda4af;
+  --accent: #fb7185;
+  --on-accent: #1a0610;
+  --ring: #f43f5e;
+  color-scheme: dark;
+}
+
 [data-theme='lavender'] {
   --canvas: #faf5ff;
   --surface: #ffffff;
@@ -90,6 +131,19 @@
   --accent: #7c3aed;
   --on-accent: #faf5ff;
   --ring: #c4b5fd;
+}
+
+[data-theme='violet'] {
+  --canvas: #1a0f2e;
+  --surface: #2e1a47;
+  --surface-hover: #5b21b6;
+  --border: #5b21b6;
+  --foreground: #ede9fe;
+  --muted: #c4b5fd;
+  --accent: #a78bfa;
+  --on-accent: #1a0f2e;
+  --ring: #8b5cf6;
+  color-scheme: dark;
 }
 
 [data-theme='sepia'] {
@@ -104,6 +158,19 @@
   --ring: #fcd34d;
 }
 
+[data-theme='cocoa'] {
+  --canvas: #1a1410;
+  --surface: #292018;
+  --surface-hover: #713f12;
+  --border: #713f12;
+  --foreground: #fef9c3;
+  --muted: #fcd34d;
+  --accent: #f59e0b;
+  --on-accent: #1a1410;
+  --ring: #d97706;
+  color-scheme: dark;
+}
+
 [data-theme='slate'] {
   --canvas: #0f172a;
   --surface: #1e293b;
@@ -114,6 +181,7 @@
   --accent: #38bdf8;
   --on-accent: #0f172a;
   --ring: #64748b;
+  color-scheme: dark;
 }
 
 [data-theme='ember'] {
@@ -126,6 +194,7 @@
   --accent: #fb923c;
   --on-accent: #1c1412;
   --ring: #78716c;
+  color-scheme: dark;
 }
 
 @theme inline {

@@ -1,7 +1,11 @@
 import { getEditorPaneSnapshot, getNoteLayoutSnapshot } from './layoutStore'
 import { getShortcutsSnapshot } from './keyboardShortcuts'
 import { getSortSnapshot } from './sortStore'
-import { getThemeSnapshot } from './themeStore'
+import {
+  getDarkThemeSnapshot,
+  getLightThemeSnapshot,
+  getThemeSnapshot,
+} from './themeStore'
 import type { SyncSettingsPayload } from './syncSettingsTypes'
 
 /**
@@ -17,6 +21,8 @@ export function collectSyncSettings(): SyncSettingsPayload {
 
   return {
     theme: getThemeSnapshot(),
+    lightTheme: getLightThemeSnapshot(),
+    darkTheme: getDarkThemeSnapshot(),
     layout: getNoteLayoutSnapshot(),
     editorPane: getEditorPaneSnapshot(),
     sort: getSortSnapshot(),

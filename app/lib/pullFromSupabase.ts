@@ -70,6 +70,14 @@ export async function pullFromSupabase(): Promise<PulledSupabaseData> {
     ) {
       settings = {
         theme: raw.theme as SyncSettingsPayload['theme'],
+        lightTheme:
+          typeof raw.lightTheme === 'string'
+            ? raw.lightTheme as SyncSettingsPayload['lightTheme']
+            : 'light',
+        darkTheme:
+          typeof raw.darkTheme === 'string'
+            ? raw.darkTheme as SyncSettingsPayload['darkTheme']
+            : 'dark',
         layout: raw.layout as SyncSettingsPayload['layout'],
         editorPane: raw.editorPane as SyncSettingsPayload['editorPane'],
         sort: raw.sort as SyncSettingsPayload['sort'],

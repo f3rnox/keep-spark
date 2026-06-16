@@ -7,15 +7,18 @@ import { Icon } from './Icon'
 import { IconButton } from './IconButton'
 
 /**
- * Header control that cycles through the available color palettes.
+ * Header control that switches between the configured light and dark palettes.
  */
 export function ThemeToggle(): JSX.Element {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, lightTheme, darkTheme, toggleTheme } = useTheme()
   const definition = THEME_DEFINITIONS[theme]
+  const target = definition.isDark
+    ? THEME_DEFINITIONS[lightTheme].label
+    : THEME_DEFINITIONS[darkTheme].label
 
   return (
     <IconButton
-      label={`Theme: ${definition.label}. Tap to switch palette.`}
+      label={`${definition.label} theme active. Switch to ${target}.`}
       onClick={toggleTheme}
     >
       <Icon name={definition.isDark ? 'moon' : 'sun'} size={18} />

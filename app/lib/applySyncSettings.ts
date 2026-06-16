@@ -1,8 +1,8 @@
 import { setEditorPane, setNoteLayout } from './layoutStore'
 import { DEFAULT_KEYBOARD_SHORTCUTS, setShortcutKeys, type ShortcutId } from './keyboardShortcuts'
 import { setSort } from './sortStore'
-import { setTheme } from './themeStore'
-import { isTheme } from './theme'
+import { setDarkThemePreference, setLightThemePreference, setTheme } from './themeStore'
+import { isTheme, THEME_DEFINITIONS } from './theme'
 import type { EditorPane, NoteLayout, NoteSort } from './types'
 import type { SyncSettingsPayload } from './syncSettingsTypes'
 import { runWithoutSettingToast } from './settingToastStore'
@@ -22,6 +22,14 @@ export function applySyncSettings(payload: SyncSettingsPayload): void {
     runWithoutSettingToast((): void => {
       if (isTheme(payload.theme)) {
         setTheme(payload.theme)
+      }
+
+      if (isTheme(payload.lightTheme) && !THEME_DEFINITIONS[payload.lightTheme].isDark) {
+        setLightThemePreference(payload.lightTheme)
+      }
+
+      if (isTheme(payload.darkTheme) && THEME_DEFINITIONS[payload.darkTheme].isDark) {
+        setDarkThemePreference(payload.darkTheme)
       }
 
       if (VALID_LAYOUTS.includes(payload.layout)) {
